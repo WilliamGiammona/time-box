@@ -17,6 +17,6 @@ jobs:
             - name: install
               run: npm install
             - name: ESLint
-              run: npx eslint --fix
+              run: npm run lint
             - name: Prettier
-              run: npx prettier --write
+              run: npx prettier --write .
