@@ -1,0 +1,26 @@
+.iphone-case > div {
+    --start-color: hsl(0, 0%, 0%);
+    --shadow-x: 2px;
+    height: 50%;
+    border-radius: 50%;
+    background-color: var(--base-color, #fdc1f7);
+    box-shadow: 0px 2px 10px var(--base-color);
+    background-size: 100% 200%;
+}
+
+.iphone-case {
+    --border-radius-outer: 2rem;
+    --outer-padding: 0.5rem;
+    --case-color: hsl(0, 0%, 0%);
+    --border-radius-inner: calc(
+        var(--border-radius-outer) - var(--outer-padding)
+    );
+    box-shadow: 0px 0px 0px 2px white;
+    background-color: var(--case-color);
+    border-radius: var(--border-radius-outer);
+    padding: var(--outer-padding);
+    width: min(250px);
+    aspect-ratio: 1/2;
+    position: relative;
+    margin-inline: auto;
+}
