@@ -1,13 +1,9 @@
 'use client';
 import { Button } from '@/components/ui/button';
-import { signOut, useSession } from 'next-auth/react';
 
 export default function Home() {
-    const session = useSession();
     return (
         <>
-            <div>{session?.data?.user?.name}</div>
-
             <header className="">
                 <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center h-screen items-center justify-center">
                     <h1 className="bg-gradient-to-r from-blue-600 via-green-500 to-indigo-400 inline-block text-transparent bg-clip-text text-5xl font-bold">
@@ -25,7 +21,6 @@ export default function Home() {
                     </Button>
                 </div>
             </header>
-            <Button onClick={() => signOut()}>Log Out</Button>
         </>
     );
 }

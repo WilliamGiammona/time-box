@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 94.7 38.35">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-width: 0px;
+      }
+
+      .cls-1, .cls-2 {
+        fill: #10182a;
+      }
+
+      .cls-2 {
+        font-family: Poppins-SemiBold, Poppins;
+        font-size: 14.11px;
+        font-weight: 600;
+      }
+
+      .cls-3 {
+        fill: #fff;
+        font-family: Poppins-BlackItalic, Poppins;
+        font-size: 24.7px;
+        font-style: italic;
+        font-weight: 800;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" width="27.76" height="27.76" rx="3.8" ry="3.8"/>
+  <text class="cls-2" transform="translate(32.93 19.78)"><tspan x="0" y="0">Timebox</tspan></text>
+  <text class="cls-3" transform="translate(5.01 22.86)"><tspan x="0" y="0">T</tspan></text>
+</svg>
