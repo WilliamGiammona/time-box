@@ -12,11 +12,19 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 
 import googleLogo from '../../assets/google-logo.svg';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import SignUp from '../Signup/Signup';
 
 function Login() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const router = useRouter();
+    const [open, setOpen] = useState(false);
+
     return (
         <>
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <Button variant="default">Sign In</Button>
                 </DialogTrigger>
@@ -28,22 +36,53 @@ function Login() {
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="flex flex-col items-center w-80 m-auto">
-                            <Input
-                                id="email"
-                                type="email"
-                                placeholder="Email"
-                                className="col-span-3 m-3"
-                            />
-                            <Input
-                                id="password"
-                                type="password"
-                                placeholder="Password"
-                                className="col-span-3 m-3"
-                            />
+                            <form action="#" method="POST">
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="Email"
+                                    className="col-span-3 m-3"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
 
-                            <Button type="submit" className="w-[100%] my-5">
-                                Sign In
-                            </Button>
+                                <div
+                                    className="text-xs cursor-pointer text-right"
+                                    onClick={() => {
+                                        router.push('/forgot-password');
+                                        setOpen(false);
+                                    }}
+                                >
+                                    Forgot password?
+                                </div>
+                                <Input
+                                    name="password"
+                                    id="password"
+                                    type="password"
+                                    placeholder="Password"
+                                    className="col-span-3 m-3"
+                                    onChange={(e) =>
+                                        setPassword(e.target.value)
+                                    }
+                                    required
+                                />
+
+                                <Button
+                                    type="submit"
+                                    className="w-full m-3"
+                                    onClick={(e) => {
+                                        signIn('credentials', {
+                                            email,
+                                            password,
+                                            redirect: true,
+                                            callbackUrl: '/app',
+                                        });
+                                        e.preventDefault();
+                                    }}
+                                    disabled={!email || !password}
+                                >
+                                    Sign In
+                                </Button>
+                            </form>
                         </div>
 
                         <div className="flex items-center justify-center w-30 m-auto">
@@ -56,7 +95,7 @@ function Login() {
                             <Button
                                 className="w-[100%] my-5"
                                 onClick={() => signIn('google')}
-                                variant={'secondary'}
+                                variant={'outline'}
                             >
                                 <Image
                                     src={googleLogo}
@@ -67,6 +106,9 @@ function Login() {
                                 ></Image>
                                 Google
                             </Button>
+                        </div>
+                        <div className="flex items-center justify-center flex-col w-80 m-auto">
+                            <SignUp />
                         </div>
                     </div>
                 </DialogContent>
