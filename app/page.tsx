@@ -1,7 +1,10 @@
 'use client';
 import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+    const router = useRouter();
+
     return (
         <>
             <header className="">
@@ -15,7 +18,7 @@ export default function Home() {
                     </h2>
                     <Button
                         className="my-5"
-                        onClick={() => alert('No functionality')}
+                        onClick={() => router.push('/calendar')}
                     >
                         Get started
                     </Button>
