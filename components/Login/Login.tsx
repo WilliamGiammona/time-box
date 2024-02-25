@@ -44,7 +44,6 @@ function Login() {
                                     className="col-span-3 m-3"
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
-
                                 <div
                                     className="text-xs cursor-pointer text-right"
                                     onClick={() => {
@@ -74,7 +73,7 @@ function Login() {
                                             email,
                                             password,
                                             redirect: true,
-                                            callbackUrl: '/app',
+                                            callbackUrl: '/calendar',
                                         });
                                         e.preventDefault();
                                     }}

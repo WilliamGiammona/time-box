@@ -14,3 +14,5 @@ coverage/*
 
 # custom definition files
 /src/types/
+
+/components/ui
