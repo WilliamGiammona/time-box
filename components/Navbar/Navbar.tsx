@@ -8,6 +8,7 @@ import styles from './Navbar.module.css';
 import { useSession } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Logout from '../Logout/Logout';
+import SignUp from '../Signup/Signup';
 
 export default function Navbar() {
     const session = useSession();
@@ -27,18 +28,25 @@ export default function Navbar() {
                 </div>
 
                 <div className={styles.nav__links}>
-                    {session?.data?.user ? <Logout /> : <Login />}
+                    {session?.data?.user ? (
+                        <Logout />
+                    ) : (
+                        <>
+                            <Login />
+                            <SignUp />
+                        </>
+                    )}
 
                     <div>
                         {session?.data?.user && (
                             <Avatar className="mx-3">
                                 <AvatarImage
-                                    src={session?.data?.user?.image || ''}
+                                    src={session?.data?.user?.email || ''}
                                     alt="User image"
                                     width={30}
                                     height={30}
                                 />
-                                <AvatarFallback>CN</AvatarFallback>
+                                <AvatarFallback></AvatarFallback>
                             </Avatar>
                         )}
                     </div>
