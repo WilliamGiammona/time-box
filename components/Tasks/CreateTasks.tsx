@@ -1,8 +1,10 @@
+'use client';
 import { db } from '@/app/firebase';
 import { addDoc, collection } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import {
     Dialog,
@@ -13,8 +15,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 
-import * as React from 'react';
-import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -24,30 +25,47 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from '@/components/ui/popover';
+import { useSession } from 'next-auth/react';
 
 export default function CreateTasks() {
-    const [date, setDate] = React.useState<Date>();
+    const [open, setOpen] = useState(false);
 
-    const [task, setTask] = React.useState({
+    const session = useSession();
+
+    const [task, setTask] = useState({
         taskName: '',
         description: '',
-        date: date,
+        date: '',
+        userEmail: '',
     });
-    React.useEffect(() => {
-        console.log(task);
-    }, [task]);
+
+    useEffect(() => {
+        setTask((prevTask) => ({
+            ...prevTask,
+            userEmail: session.data?.user?.email || '',
+        }));
+    }, [session]);
 
     const handleCreate = async () => {
         console.log(task);
         const tasksCollection = collection(db, 'tasks');
         await addDoc(tasksCollection, task);
+        setOpen(!open);
+        setTask({
+            taskName: '',
+            description: '',
+            date: '',
+            userEmail: '',
+        });
     };
 
     return (
         <>
-            <Dialog>
+            <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="outline">Add a task</Button>
+                    <Button variant="outline" className="my-4 max-w-30 mx-auto">
+                        Add a task
+                    </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -67,7 +85,7 @@ export default function CreateTasks() {
                             <Input
                                 id="task"
                                 name="taskName"
-                                placeholder="Task"
+                                placeholder={'Task'}
                                 className="col-span-3"
                                 onChange={(e) =>
                                     setTask({
@@ -82,11 +100,12 @@ export default function CreateTasks() {
                             <Label htmlFor="description" className="text-right">
                                 Description
                             </Label>
-                            <Input
+                            <Textarea
                                 id="description"
                                 name="description"
                                 placeholder="Description"
                                 className="col-span-3"
+                                maxLength={100}
                                 onChange={(e) =>
                                     setTask({
                                         ...task,
@@ -107,12 +126,13 @@ export default function CreateTasks() {
                                         variant={'outline'}
                                         className={cn(
                                             'w-[280px] justify-start text-left font-normal',
-                                            !date && 'text-muted-foreground'
+                                            !task.date &&
+                                                'text-muted-foreground'
                                         )}
                                     >
                                         <CalendarIcon className="mr-2 h-4 w-4" />
-                                        {date ? (
-                                            format(date, 'PPP')
+                                        {task.date ? (
+                                            task.date?.toDateString()
                                         ) : (
                                             <span>Pick a date</span>
                                         )}
@@ -121,13 +141,12 @@ export default function CreateTasks() {
                                 <PopoverContent className="w-auto p-0">
                                     <Calendar
                                         mode="single"
-                                        selected={date}
+                                        selected={task.date}
                                         onSelect={(selectedDate) => {
                                             setTask({
                                                 ...task,
                                                 date: selectedDate,
                                             });
-                                            setDate;
                                         }}
                                         initialFocus
                                     />
@@ -138,8 +157,6 @@ export default function CreateTasks() {
                             <Button type="submit">Add</Button>
                         </DialogFooter>
                     </form>
-
-                    {/* include validation with required or other standard HTML validation rules */}
                 </DialogContent>
             </Dialog>
         </>
