@@ -2,7 +2,7 @@
 import React from 'react';
 import Login from '../Login/Login';
 import Image from 'next/image';
-import timeboxLogoLong from '../../assets/timebox-long.svg';
+import timeboxLogoLong2 from '../../assets/evocal-1.png';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { useSession } from 'next-auth/react';
@@ -19,9 +19,9 @@ export default function Navbar() {
                 <div className="nav__logo">
                     <Link href="/">
                         <Image
-                            src={timeboxLogoLong}
-                            width={120}
-                            height={30}
+                            src={timeboxLogoLong2}
+                            width={50}
+                            height={50}
                             alt="Timebox logo"
                         ></Image>
                     </Link>
