@@ -45,7 +45,7 @@ interface Task {
     id: string;
     taskName: string;
     description: string;
-    date?: string;
+    date: string;
     email?: string;
 }
 
@@ -63,7 +63,7 @@ export default function App() {
     });
 
     useEffect(() => {
-        const userEmail = session?.data?.user?.email || session?.user?.email;
+        const userEmail = session?.data?.user?.email;
         if (!userEmail) {
             console.error('User email is undefined in session data');
             return;
@@ -77,12 +77,16 @@ export default function App() {
         const unsubscribe = onSnapshot(emailRef, (snapshot) => {
             setTasks(
                 snapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    const date = data.date
+                        ? data.date.toDate().toDateString()
+                        : '';
                     return {
                         id: doc.id,
-                        taskName: doc.data().taskName,
-                        description: doc.data().description,
-                        email: doc.data().userEmail,
-                        date: doc.data().date.toDate().toDateString(),
+                        taskName: data.taskName,
+                        description: data.description,
+                        email: data.userEmail,
+                        date: date,
                     };
                 })
             );
@@ -233,6 +237,7 @@ export default function App() {
                                                     date: selectedDate,
                                                 });
                                             }}
+                                            required={true}
                                             initialFocus
                                         />
                                     </PopoverContent>
@@ -275,16 +280,22 @@ export default function App() {
                                         (
                                             <li
                                                 key={task.id}
-                                                className="flex flex-col border border-black p-3 my-3  min-w-32 rounded-lg max-w-content"
+                                                className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content"
                                             >
                                                 <h2 className="text-lg font-bold">
                                                     {task.taskName}
                                                 </h2>
                                                 <p>{task.description}</p>
-                                                <p className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
+                                                <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {task.date}
-                                                </p>
+                                                    {task.date || (
+                                                        <>
+                                                            <p className="text-slate-400">
+                                                                No date
+                                                            </p>
+                                                        </>
+                                                    )}
+                                                </div>
                                                 {/* <p>{task.email}</p>
                                                 <p>{task.id}</p> */}
 
