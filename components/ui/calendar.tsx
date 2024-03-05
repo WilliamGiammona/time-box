@@ -1,3 +1,5 @@
+'use client';
+
 import * as React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
@@ -57,6 +59,7 @@ function Calendar({
                     <ChevronRight className="h-4 w-4" />
                 ),
             }}
+            {...props}
         />
     );
 }

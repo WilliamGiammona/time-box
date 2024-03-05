@@ -4,28 +4,23 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/app/firebase';
 
-interface User {
-    email: string;
-    password: string;
-}
-
-export const authOptions = {
+const authOptions = {
     // Configure one or more authentication providers
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID!,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         }),
 
         CredentialsProvider({
             name: 'Credentials',
             credentials: {},
 
-            async authorize(credentials): Promise<User> {
-                return await signInWithEmailAndPassword(
+            async authorize(credentials) {
+                return signInWithEmailAndPassword(
                     auth,
-                    (credentials as { email?: string }).email || '',
-                    (credentials as { password?: string }).password || ''
+                    (credentials && credentials.email) || '',
+                    (credentials && credentials.password) || ''
                 )
                     .then((userCredential) => {
                         if (userCredential.user) {
@@ -41,5 +36,8 @@ export const authOptions = {
             },
         }),
     ],
+
+    callbacks: {},
 };
+
 export default NextAuth(authOptions);
