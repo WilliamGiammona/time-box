@@ -41,12 +41,16 @@ export default function Navbar() {
                         {session?.data?.user && (
                             <Avatar className="mx-3">
                                 <AvatarImage
-                                    src={session?.data?.user?.email || ''}
+                                    src={session?.data?.user?.image || ''}
                                     alt="User image"
                                     width={30}
                                     height={30}
                                 />
-                                <AvatarFallback></AvatarFallback>
+                                <AvatarFallback>
+                                    {session?.data?.user?.email
+                                        ?.charAt(0)
+                                        .toUpperCase()}
+                                </AvatarFallback>
                             </Avatar>
                         )}
                     </div>

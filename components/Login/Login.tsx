@@ -73,8 +73,8 @@ function Login() {
                                         signIn('credentials', {
                                             email,
                                             password,
-                                            redirect: true,
-                                            callbackUrl: '/calendar',
+                                            callbackUrl:
+                                                'http://localhost:3000/calendar',
                                         });
                                         e.preventDefault();
                                     }}

@@ -4,12 +4,10 @@ import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/app/firebase';
-
 interface User {
     email: string;
     password: string;
 }
-
 export const authOptions = {
     // Configure one or more authentication providers
     providers: [
@@ -26,7 +24,6 @@ export const authOptions = {
         CredentialsProvider({
             name: 'Credentials',
             credentials: {},
-
             async authorize(credentials): Promise<User> {
                 return await signInWithEmailAndPassword(
                     auth,
@@ -37,7 +34,6 @@ export const authOptions = {
                         if (userCredential.user) {
                             return userCredential.user;
                         }
-
                         throw new Error('User not found'); // Throw an error if user is not found
                     })
                     .catch((error) => {
