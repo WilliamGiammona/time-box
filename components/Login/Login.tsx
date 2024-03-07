@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator';
 import Image from 'next/image';
 
 import googleLogo from '../../assets/google-logo.svg';
+import githubLogo from '../../assets/github-logo.svg';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import SignUp from '../Signup/Signup';
@@ -92,20 +93,36 @@ function Login() {
 
                         <div className="flex items-center justify-center flex-col w-80 m-auto">
                             <Button
-                                className="w-[100%] my-5"
+                                className="w-[100%] my-1"
                                 onClick={() => signIn('google')}
                                 variant={'outline'}
                             >
                                 <Image
                                     src={googleLogo}
-                                    alt="Google logo"
+                                    alt="Google mark"
                                     width={15}
                                     height={15}
                                     className="m-3"
                                 ></Image>
                                 Google
                             </Button>
+
+                            <Button
+                                className="w-[100%] my-1"
+                                onClick={() => signIn('github')}
+                                variant={'outline'}
+                            >
+                                <Image
+                                    src={githubLogo}
+                                    alt="Github mark"
+                                    width={15}
+                                    height={15}
+                                    className="m-3"
+                                ></Image>
+                                GitHub
+                            </Button>
                         </div>
+
                         <div className="flex items-center justify-center flex-col w-80 m-auto">
                             <SignUp />
                         </div>
