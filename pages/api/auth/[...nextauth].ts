@@ -1,32 +1,39 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import GithubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/app/firebase';
-
-const authOptions = {
+interface User {
+    email: string;
+    password: string;
+}
+export const authOptions = {
     // Configure one or more authentication providers
     providers: [
         GoogleProvider({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: process.env.GOOGLE_CLIENT_ID!,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        }),
+
+        GithubProvider({
+            clientId: process.env.GITHUB_ID,
+            clientSecret: process.env.GITHUB_SECRET,
         }),
 
         CredentialsProvider({
             name: 'Credentials',
             credentials: {},
-
-            async authorize(credentials) {
-                return signInWithEmailAndPassword(
+            async authorize(credentials): Promise<User> {
+                return await signInWithEmailAndPassword(
                     auth,
-                    (credentials && credentials.email) || '',
-                    (credentials && credentials.password) || ''
+                    (credentials as { email?: string }).email || '',
+                    (credentials as { password?: string }).password || ''
                 )
                     .then((userCredential) => {
                         if (userCredential.user) {
                             return userCredential.user;
                         }
-
                         throw new Error('User not found'); // Throw an error if user is not found
                     })
                     .catch((error) => {
@@ -36,8 +43,6 @@ const authOptions = {
             },
         }),
     ],
-
-    callbacks: {},
+    secret: process.env.JWT_SECRET,
 };
-
 export default NextAuth(authOptions);
