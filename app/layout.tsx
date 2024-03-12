@@ -1,12 +1,19 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Poppins } from 'next/font/google';
+
 import './globals.css';
-import { authOptions } from '@/pages/api/auth/[...nextauth].js';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { getServerSession } from 'next-auth';
 import SessionProvider from './SessionProvider';
 import Navbar from '@/components/Navbar/Navbar';
 
 const inter = Inter({ subsets: ['latin'] });
+const poppins = Poppins({
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-poppins',
+    weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+});
 
 export const metadata: Metadata = {
     title: 'Create Next App',
@@ -22,7 +29,7 @@ export default async function RootLayout({
     const session = await getServerSession(authOptions);
     return (
         <html lang="en">
-            <body className={inter.className}>
+            <body className={`${poppins.variable} ${inter.className}`}>
                 <SessionProvider session={session}>
                     <Navbar />
                     {children}
