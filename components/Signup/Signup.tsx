@@ -32,7 +32,7 @@ function SignUp() {
                 <DialogTrigger asChild>
                     <Button
                         variant="secondary"
-                        className={'mx-3 w-full'}
+                        className={'mx-3'}
                         onClick={() => setOpen(false)}
                     >
                         Sign Up

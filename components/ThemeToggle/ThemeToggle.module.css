@@ -1,0 +1,4 @@
+.sun {
+    filter: brightness(0) saturate(100%) invert(94%) sepia(62%) saturate(7098%)
+        hue-rotate(340deg) brightness(100%) contrast(97%);
+}

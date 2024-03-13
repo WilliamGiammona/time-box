@@ -35,7 +35,6 @@ export default function Navbar() {
                         <>
                             <Login />
                             <SignUp />
-                            <ThemeToggle />
                         </>
                     )}
 
@@ -56,6 +55,7 @@ export default function Navbar() {
                             </Avatar>
                         )}
                     </div>
+                    <ThemeToggle />
                 </div>
             </nav>
         </>
