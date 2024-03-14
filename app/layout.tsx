@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { authOptions } from '@/pages/api/auth/[...nextauth].js';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import { getServerSession } from 'next-auth';
 import SessionProvider from './SessionProvider';
 import Navbar from '@/components/Navbar/Navbar';

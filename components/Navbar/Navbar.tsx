@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Logout from '../Logout/Logout';
 import SignUp from '../Signup/Signup';
 import Feedback from '../../app/feedback';
+import ThemeToggle from '../ThemeToggle/ThemeToggle';
 
 export default function Navbar() {
     const session = useSession();
@@ -38,6 +39,7 @@ export default function Navbar() {
                         <>
                             <Login />
                             <SignUp />
+                            <ThemeToggle />
                         </>
                     )}
 
