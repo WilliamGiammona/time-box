@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { FaMoon } from 'react-icons/fa';
 import { BsSunFill } from 'react-icons/bs';
+import styles from './ThemeToggle.module.css'; // Import the CSS file
 
 const ThemeToggle = () => {
     const [darkMode, setDarkMode] = useState(true);
@@ -25,15 +26,15 @@ const ThemeToggle = () => {
     return (
         <>
             <div
-                className="relative w-40 h-8 flex items-center dark:bg-gray-900 bg-blue-300 cursor-pointer rounded-full p-1 mt-1"
+                className="relative w-20 h-8 flex items-center dark:bg-black-900 bg-white-300 cursor-pointer rounded-full p-1 mt-1 border"
                 onClick={() => setDarkMode(!darkMode)}
             >
-                <FaMoon className="text-black" size={20} />
+                <FaMoon className="text-slate-800" size={20} />
                 <div
-                    className="absolute bg-white dark:bg-medium w-6 h-6 rounded-full shadow-md transform transition-transform duration-300"
+                    className="absolute bg-neutral-300 z-10 dark:bg-muted w-6 h-6 rounded-full shadow-md transform transition-transform duration-300"
                     style={darkMode ? { left: '2px' } : { right: '2px' }}
                 ></div>
-                <BsSunFill className="ml-auto bg-yellow-400" size={18} />
+                <BsSunFill className={`ml-auto ${styles.sun}`} size={18} />
             </div>
         </>
     );

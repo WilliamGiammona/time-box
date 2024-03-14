@@ -260,7 +260,7 @@ export default function App() {
 
     return (
         <>
-            <div className="bg-white h-full w-full transition-all duration-500">
+            <div className="h-[100vh] w-full">
                 <div className="row flex">
                     <ResizablePanelGroup
                         direction="horizontal"
@@ -280,19 +280,21 @@ export default function App() {
                                         (
                                             <li
                                                 key={task.id}
-                                                className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content"
+                                                className="flex flex-col border border-slate-300 dark:border-muted p-3 my-3  min-w-32 rounded-lg max-w-content"
                                             >
                                                 <h2 className="text-lg font-bold">
                                                     {task.taskName}
                                                 </h2>
                                                 <p>{task.description}</p>
-                                                <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
+                                                <div className="inline-flex items-center border my-2 border-white p-1 rounded-lg max-w-44 bg-slate-100 text-black dark:bg-muted dark:border-neutral-900 dark:text-white">
                                                     <CalendarIcon className="mr-2 h-4 w-4" />
-                                                    {task.date || (
+                                                    {(
+                                                        <p className="dark:">
+                                                            {task.date}
+                                                        </p>
+                                                    ) || (
                                                         <>
-                                                            <p className="text-slate-400">
-                                                                No date
-                                                            </p>
+                                                            <p>No date</p>
                                                         </>
                                                     )}
                                                 </div>
@@ -307,12 +309,13 @@ export default function App() {
                                                         task.date
                                                     )}
                                                     <Button
-                                                        className="mx-3"
+                                                        className={`mx-3`}
                                                         onClick={() =>
                                                             deleteDocument(
                                                                 task.id
                                                             )
                                                         }
+                                                        variant={'outline'}
                                                     >
                                                         Delete
                                                     </Button>

@@ -63,7 +63,7 @@ export default function CreateTasks() {
         <>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="outline" className="my-4 max-w-30 mx-auto">
+                    <Button variant="default" className="my-4 max-w-30 mx-auto">
                         Add a task
                     </Button>
                 </DialogTrigger>
