@@ -31,7 +31,7 @@ function SignUp() {
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                     <Button
-                        variant="secondary"
+                        variant="outline"
                         className={'mx-3'}
                         onClick={() => setOpen(false)}
                     >
