@@ -9,6 +9,7 @@ import { useSession } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Logout from '../Logout/Logout';
 import SignUp from '../Signup/Signup';
+import Feedback from '../../app/feedback';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 
 export default function Navbar() {
@@ -30,7 +31,10 @@ export default function Navbar() {
 
                 <div className={styles.nav__links}>
                     {session?.data?.user ? (
-                        <Logout />
+                        <>
+                            <Feedback />
+                            <Logout />
+                        </>
                     ) : (
                         <>
                             <Login />
