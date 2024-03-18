@@ -35,6 +35,46 @@
         --radius: 0.5rem;
     }
 
+    .poppins {
+        font-family: var(--font-poppins);
+    }
+
+    /* For WebKit (Chrome, Safari, etc.) */
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 5px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
+
+    /* For Firefox */
+    /* Firefox supports scrollbar-color but not scrollbar-width */
+    /* You can use scrollbar-color for newer versions of Firefox */
+    /* For older versions, you may need to use a library like "overlay-scrollbar" */
+    /* More info: https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-color */
+    /* More info: https://github.com/dmuy/overlay-scrollbars */
+    .scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+    .scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 5px;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+    }
+
     .dark {
         --background: hsl(240, 10%, 4%);
         --foreground: hsl(210, 40%, 98%);
