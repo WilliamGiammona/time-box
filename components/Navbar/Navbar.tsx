@@ -2,7 +2,7 @@
 import React from 'react';
 import Login from '../Login/Login';
 import Image from 'next/image';
-import timeboxLogoLong2 from '../../assets/evocal.png';
+import timeboxLogo from '../../assets/evocal-1.png';
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { useSession } from 'next-auth/react';
@@ -21,13 +21,14 @@ export default function Navbar() {
                 <div className="nav__log">
                     <Link href="/" className="flex items-center">
                         <Image
-                            src={timeboxLogoLong2}
+                            src={timeboxLogo}
                             width={50}
                             height={50}
                             alt="Timebox logo"
+                            className="dark:invert rounded-lg"
                         ></Image>
-                        <h1 className="font-medium poppins text-slate-500">
-                            EvoCal
+                        <h1 className="font-bold poppins dark:text-neutral-50 text-neutral-800 ml-4">
+                            Evo<span className="text-slate-500">Cal</span>
                         </h1>
                     </Link>
                 </div>
