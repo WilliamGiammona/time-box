@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/resizable';
 import CreateTasks from '@/components/Tasks/CreateTasks';
 import { db } from '../firebase';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import {
     onSnapshot,
@@ -310,13 +310,6 @@ export default function App() {
                                     values={tasks}
                                     onReorder={setTasks}
                                 >
-                                    <div
-                                        className="draggable__div border border-gray-300 p-3"
-                                        draggable="true"
-                                    >
-                                        {' '}
-                                        <h2>Drag me over</h2>
-                                    </div>
                                     {tasks
                                         .filter((task) => !task.date) // Filter tasks with null or empty date
                                         .map(
@@ -434,10 +427,6 @@ export default function App() {
                                         date.getFullYear() ===
                                             currentDate.getFullYear();
 
-                                    const handleDrop = (date: Date) => {
-                                        console.log(date);
-                                    };
-
                                     // Filter tasks for the current date
                                     const tasksForDate = tasks.filter(
                                         (task) => {
@@ -458,11 +447,11 @@ export default function App() {
                                     return (
                                         <div
                                             key={date.toISOString()}
-                                            onDrop={() => handleDrop(date)}
-                                            onDragOver={(e) =>
-                                                e.preventDefault()
-                                            }
                                             className={`flex flex-col items-center`}
+                                            onDragEnter={(e) => {
+                                                e.preventDefault();
+                                                console.log(date);
+                                            }}
                                         >
                                             <div className="date bg-slate-200 date-item flex-shrink-0 h-16 p-4 m-2 flex items-center justify-center  rounded-md">
                                                 <h1 className="font-medium mx-2">
@@ -504,103 +493,107 @@ export default function App() {
                                             </div>
 
                                             {/* Render tasks for this date */}
-                                            {tasksForDate.map((task) => (
-                                                <motion.div
-                                                    key={task.id}
-                                                    draggable="true"
-                                                    className=""
-                                                >
-                                                    <li
-                                                        key={task.id}
-                                                        className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content cursor-grab active:animate-pulse active:cursor-grabbing"
-                                                    >
-                                                        <div className="flex place-content-between">
-                                                            <h2 className="text-base font-bold">
-                                                                {task.taskName}
-                                                            </h2>
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger>
-                                                                    <svg
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                        width="24"
-                                                                        height="24"
-                                                                        viewBox="0 0 24 24"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        strokeWidth="2"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        className="lucide lucide-ellipsis text-slate-400"
-                                                                    >
-                                                                        <circle
-                                                                            cx="12"
-                                                                            cy="12"
-                                                                            r="1"
-                                                                        />
-                                                                        <circle
-                                                                            cx="19"
-                                                                            cy="12"
-                                                                            r="1"
-                                                                        />
-                                                                        <circle
-                                                                            cx="5"
-                                                                            cy="12"
-                                                                            r="1"
-                                                                        />
-                                                                    </svg>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent className="flex flex-col items-start min-w-[3rem] w-full">
-                                                                    {editButton(
-                                                                        task.id,
-                                                                        task.taskName,
-                                                                        task.description,
-                                                                        task.date
-                                                                    )}
-
-                                                                    <Button
-                                                                        variant={
-                                                                            'ghost'
-                                                                        }
-                                                                        className="w-full p-2 flex justify-start"
-                                                                        onClick={() =>
-                                                                            deleteDocument(
-                                                                                task.id
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4 mr-2" />
-                                                                        Delete
-                                                                    </Button>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </div>
-                                                        <p className="text-sm">
-                                                            {task.description}
-                                                        </p>
-                                                        <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {(
-                                                                <>
-                                                                    <p className="text-slate-400 text-sm">
-                                                                        {' '}
-                                                                        {
+                                            {tasksForDate.map((task) => {
+                                                return (
+                                                    <motion.div key={task.id}>
+                                                        <li
+                                                            draggable="true"
+                                                            key={task.id}
+                                                            className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content cursor-grab active:animate-pulse active:cursor-grabbing"
+                                                        >
+                                                            <div className="flex place-content-between">
+                                                                <h2 className="text-base font-bold">
+                                                                    {
+                                                                        task.taskName
+                                                                    }
+                                                                </h2>
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger>
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            width="24"
+                                                                            height="24"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            className="lucide lucide-ellipsis text-slate-400"
+                                                                        >
+                                                                            <circle
+                                                                                cx="12"
+                                                                                cy="12"
+                                                                                r="1"
+                                                                            />
+                                                                            <circle
+                                                                                cx="19"
+                                                                                cy="12"
+                                                                                r="1"
+                                                                            />
+                                                                            <circle
+                                                                                cx="5"
+                                                                                cy="12"
+                                                                                r="1"
+                                                                            />
+                                                                        </svg>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent className="flex flex-col items-start min-w-[3rem] w-full">
+                                                                        {editButton(
+                                                                            task.id,
+                                                                            task.taskName,
+                                                                            task.description,
                                                                             task.date
-                                                                        }{' '}
-                                                                    </p>
-                                                                </>
-                                                            ) || (
-                                                                <>
-                                                                    <p className="text-slate-400 text-sm">
-                                                                        No date
-                                                                    </p>
-                                                                </>
-                                                            )}
-                                                        </div>
-                                                        {/* <p>{task.email}</p>
+                                                                        )}
+
+                                                                        <Button
+                                                                            variant={
+                                                                                'ghost'
+                                                                            }
+                                                                            className="w-full p-2 flex justify-start"
+                                                                            onClick={() =>
+                                                                                deleteDocument(
+                                                                                    task.id
+                                                                                )
+                                                                            }
+                                                                        >
+                                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                                            Delete
+                                                                        </Button>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+                                                            <p className="text-sm">
+                                                                {
+                                                                    task.description
+                                                                }
+                                                            </p>
+                                                            <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
+                                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                                {(
+                                                                    <>
+                                                                        <p className="text-slate-400 text-sm">
+                                                                            {' '}
+                                                                            {
+                                                                                task.date
+                                                                            }{' '}
+                                                                        </p>
+                                                                    </>
+                                                                ) || (
+                                                                    <>
+                                                                        <p className="text-slate-400 text-sm">
+                                                                            No
+                                                                            date
+                                                                        </p>
+                                                                    </>
+                                                                )}
+                                                            </div>
+                                                            {/* <p>{task.email}</p>
                                             <p>{task.id}</p> */}
-                                                    </li>
-                                                </motion.div>
-                                            ))}
+                                                        </li>
+                                                    </motion.div>
+                                                );
+                                            })}
                                         </div>
                                     );
                                 })}
