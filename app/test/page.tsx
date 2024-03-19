@@ -131,7 +131,9 @@ const Board = ({ dates }: BoardProps) => {
                     maxSize={50}
                     className="border dark:border-neutral-800 p-2 rounded-lg flex flex-col items-center"
                 >
-                    <h2 className="font-bold text-neutral-800">Brain dump🧠</h2>
+                    <h2 className="font-bold dark:text-neutral-50 text-neutral-800">
+                        Brain Dump🧠
+                    </h2>
 
                     <div className="tasks">
                         <>
@@ -470,12 +472,12 @@ const AddCard = ({ column, cards }: AddCardProps) => {
                     <textarea
                         onChange={(e) => setText(e.target.value)}
                         autoFocus
-                        placeholder="Add new task..."
+                        placeholder="Add task title"
                         className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm dark:text-neutral-50 text-neutral-800 placeholder-violet-300 focus:outline-0"
                     />
                     <textarea
                         onChange={(e) => setDescription(e.target.value)}
-                        placeholder="Add new description"
+                        placeholder="Add task description"
                         className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm dark:text-neutral-50 text-neutral-800 placeholder-violet-300 focus:outline-0"
                     />
                     <div className="mt-1.5 flex items-center justify-end gap-1.5">
