@@ -28,6 +28,7 @@ import {
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
 
 const options: Intl.DateTimeFormatOptions = {
     weekday: 'short',
@@ -50,6 +51,8 @@ export const Calendar = () => {
 
         dates.push({ date: formattedDate, isToday });
     }
+
+    console.log(dates);
     return (
         <div className="h-[91vh] w-full bg-neutral-100 dark:bg-neutral-900 text-neutral-50">
             <Board dates={dates} />
@@ -62,7 +65,6 @@ interface BoardProps {
 }
 
 async function AddCardsToFirebase(newCard: CardType) {
-    console.log(newCard);
     const tasksCollection = collection(db, 'tasks');
     await addDoc(tasksCollection, newCard);
 }
@@ -124,6 +126,7 @@ const Board = ({ dates }: BoardProps) => {
 
     return (
         <div className="flex h-full w-full gap-3 p-12">
+            <Button>Read Calendar</Button>
             <ResizablePanelGroup direction="horizontal">
                 <ResizablePanel
                     defaultSize={15}
@@ -458,7 +461,6 @@ const AddCard = ({ column, cards }: AddCardProps) => {
         };
 
         AddCardsToFirebase(newCard);
-
         setText('');
         setDescription('');
 
