@@ -15,7 +15,7 @@ export default function ForgotPassword() {
     return (
         <>
             <DialogHeader>
-                <h1>Forgot Password</h1>
+                <h1 className="mx-auto my-10">Forgot Password</h1>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="flex flex-col items-center w-80 m-auto">

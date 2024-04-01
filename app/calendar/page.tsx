@@ -1,73 +1,79 @@
 'use client';
-import { useSession } from 'next-auth/react';
-import { redirect } from 'next/navigation';
-
+import React, {
+    Dispatch,
+    SetStateAction,
+    useState,
+    DragEvent,
+    FormEvent,
+    useRef,
+    useEffect,
+} from 'react';
+import { FiPlus, FiTrash } from 'react-icons/fi';
+import { motion } from 'framer-motion';
+import { FaFire } from 'react-icons/fa';
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    onSnapshot,
+    query,
+    updateDoc,
+    where,
+} from 'firebase/firestore';
+import { db } from '../firebase';
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import CreateTasks from '@/components/Tasks/CreateTasks';
-import { db } from '../firebase';
-import { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 
-import {
-    onSnapshot,
-    collection,
-    query,
-    where,
-    updateDoc,
-    doc,
-    deleteDoc,
-} from 'firebase/firestore';
-import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Calendar } from '@/components/ui/calendar';
+const options: Intl.DateTimeFormatOptions = {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+};
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+export const Calendar = () => {
+    const today = new Date();
 
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from '@/components/ui/popover';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
-import { CalendarIcon, Pencil, Trash2 } from 'lucide-react';
-import { motion, Reorder } from 'framer-motion';
+    const dates: { date: string; isToday: boolean }[] = [];
 
-interface Task {
-    id: string;
-    taskName: string;
-    description: string;
-    date: string;
-    email?: string;
+    for (let i = -7; i <= 7; i++) {
+        const date = new Date(today);
+
+        date.setDate(today.getDate() + i);
+        const formattedDate = date.toLocaleDateString('en-US', options);
+
+        const isToday = date.toDateString() === today.toDateString(); // Check if date is today
+
+        dates.push({ date: formattedDate, isToday });
+    }
+    return (
+        <div className="h-[91vh] w-full bg-neutral-100 dark:bg-neutral-900 text-neutral-50">
+            <Board dates={dates} />
+        </div>
+    );
+};
+
+interface BoardProps {
+    dates: { date: string; isToday: boolean }[];
 }
 
-export default function App() {
-    const session = useSession();
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [tasks, setTasks] = useState<Task[]>([]);
+async function AddCardsToFirebase(newCard: CardType) {
+    console.log(newCard);
+    const tasksCollection = collection(db, 'tasks');
+    await addDoc(tasksCollection, newCard);
+}
 
-    const [task, setTask] = useState({
-        taskName: '',
-        description: '',
-        date: '',
-        userEmail: '',
-    });
+const Board = ({ dates }: BoardProps) => {
+    const session = useSession();
+    const [cards, setCards] = useState<CardType[]>([]);
+
+    useEffect(() => {
+        console.log(cards);
+    }, [cards]);
 
     useEffect(() => {
         const userEmail = session?.data?.user?.email;
@@ -78,22 +84,23 @@ export default function App() {
 
         const emailRef = query(
             collection(db, 'tasks'),
-            where('userEmail', '==', userEmail)
+            where('email', '==', userEmail)
         );
 
-        const unsubscribe = onSnapshot(emailRef, (snapshot) => {
-            setTasks(
-                snapshot.docs.map((doc) => {
+        const unsubscribe = onSnapshot(emailRef, (tasks) => {
+            console.log(tasks);
+            setCards(
+                tasks.docs.map((doc, index) => {
                     const data = doc.data();
-                    const date = data.date
-                        ? data.date.toDate().toDateString()
-                        : '';
+                    const date = data.column;
+
                     return {
-                        id: doc.id,
+                        id: (index + 1).toString(),
+                        docId: doc.id,
                         taskName: data.taskName,
                         description: data.description,
                         email: data.userEmail,
-                        date: date,
+                        column: date,
                     };
                 })
             );
@@ -101,509 +108,447 @@ export default function App() {
 
         return unsubscribe;
     }, [session]);
-    useSession({
-        required: true,
-        onUnauthenticated() {
-            redirect('/');
-        },
-    });
+    const boardRef = useRef<HTMLDivElement>(null);
 
-    const editDocument = async (
-        id: string,
-        name: string,
-        desc: string,
-        date: string
-    ) => {
-        console.log(id, name, desc, date);
-        console.log(task.taskName, task.description, task.date);
-
-        await updateDoc(doc(db, 'tasks', id), {
-            taskName: task.taskName,
-            description: task.description,
-            date: task.date,
-        });
-    };
-
-    const deleteDocument = async (id: string) => {
-        console.log(id);
-        await deleteDoc(doc(db, 'tasks', id));
-    };
-
-    const getTaskDetails = (
-        id: string,
-        name: string,
-        desc: string,
-        date: string
-    ) => {
-        setTask({
-            ...task,
-            taskName: name,
-            description: desc,
-            date: date,
-        });
-    };
-
-    const dateRange = getDateRange();
-
-    function getDateRange() {
-        const currentDate = new Date();
-        const startDate = new Date(currentDate);
-        startDate.setDate(startDate.getDate() - 7); // Get date 7 days before current date
-        const endDate = new Date(currentDate);
-        endDate.setDate(endDate.getDate() + 7); // Get date 7 days after current date
-
-        const dates = [];
-        const currentDateIter = new Date(startDate);
-        while (currentDateIter <= endDate) {
-            dates.push(new Date(currentDateIter));
-            currentDateIter.setDate(currentDateIter.getDate() + 1);
+    useEffect(() => {
+        // Find the index of today's column
+        const todayIndex = dates.findIndex((dateObj) => dateObj.isToday);
+        if (todayIndex !== -1 && boardRef.current) {
+            // Calculate the scroll position based on the width of each column
+            const columnWidth = boardRef.current.children[0].clientWidth + 3; // Adding 3 for the gap
+            const scrollLeft = todayIndex * columnWidth;
+            // Set the scroll position
+            boardRef.current.scrollLeft = scrollLeft;
         }
+    }, [dates]);
 
-        return dates;
-    }
+    return (
+        <div className="flex h-full w-full gap-3 p-12">
+            <ResizablePanelGroup direction="horizontal">
+                <ResizablePanel
+                    defaultSize={15}
+                    minSize={15}
+                    maxSize={50}
+                    className="border dark:border-neutral-800 p-2 rounded-lg flex flex-col items-center"
+                >
+                    <h2 className="font-bold dark:text-neutral-50 text-neutral-800">
+                        Brain Dump🧠
+                    </h2>
 
-    const editButton = (
-        id: string,
-        name: string,
-        desc: string,
-        date: string
-    ) => {
-        return (
-            <>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                        <Button
-                            variant={'ghost'}
-                            className="w-full p-2 flex justify-start"
-                            onClick={(e) => {
-                                getTaskDetails(id, name, desc, date);
-                                setDialogOpen(true); // Open the dialog
-                                e.stopPropagation(); // Stop event propagation
-                            }}
-                        >
-                            <Pencil className="h-4 w-4 mr-2" />
-                            Edit
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent
-                        className="sm:max-w-[425px]"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <DialogHeader>
-                            <DialogTitle>Edit task</DialogTitle>
-                        </DialogHeader>
-                        <form
-                            className="grid gap-4 py-3"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                editDocument(id, name, desc, date);
-                                setDialogOpen(false);
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="task" className="text-right">
-                                    Task name
-                                </Label>
-                                <Input
-                                    id="task"
-                                    name="taskName"
-                                    placeholder={name}
-                                    className="col-span-3"
-                                    onChange={(e) => {
-                                        setTask({
-                                            ...task,
-                                            taskName: e.target.value,
-                                        });
-                                    }}
-                                    required={true}
-                                    value={task.taskName}
-                                />
+                    <div className="tasks">
+                        <>
+                            <Column
+                                title={'Tasks'}
+                                cards={cards}
+                                column={'braindump'}
+                                headingColor="text-purple-400"
+                                setCards={setCards}
+                                isToday={false}
+                            ></Column>
+                        </>
+                    </div>
+                </ResizablePanel>
+                <ResizableHandle className="bg-transparent rounded-lg mr-4" />
+                <ResizablePanel>
+                    <div ref={boardRef} className="flex overflow-scroll h-full">
+                        {dates.map((dateObj) => (
+                            <Column
+                                key={dateObj.date}
+                                title={dateObj.date}
+                                column={dateObj.date}
+                                headingColor="text-neutral-500"
+                                cards={cards}
+                                setCards={setCards}
+                                isToday={dateObj.isToday}
+                            />
+                        ))}
+                    </div>
+                </ResizablePanel>
+                <section id="burn-barrel" className="">
+                    <BurnBarrel setCards={setCards} />
+                </section>
+            </ResizablePanelGroup>
+        </div>
+    );
+};
 
-                                <Label
-                                    htmlFor="description"
-                                    className="text-right"
-                                >
-                                    Description
-                                </Label>
-                                <Textarea
-                                    id="description"
-                                    name="description"
-                                    placeholder={desc}
-                                    className="col-span-3"
-                                    maxLength={100}
-                                    onChange={(e) =>
-                                        setTask({
-                                            ...task,
-                                            description: e.target.value,
-                                        })
-                                    }
-                                    value={task.description}
-                                    required={true}
-                                />
-                            </div>
-                            <div className="grid grid-cols-4 items-center gap-4">
-                                <Label htmlFor="task" className="text-right">
-                                    Date
-                                </Label>
-                                <Popover>
-                                    <PopoverTrigger asChild>
-                                        <Button
-                                            variant={'outline'}
-                                            className={cn(
-                                                'w-[280px] justify-start text-left font-normal',
-                                                !date && 'text-muted-foreground'
-                                            )}
-                                        >
-                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                            {task.date ? (
-                                                task.date?.toLocaleString()
-                                            ) : (
-                                                <span>Pick a date</span>
-                                            )}
-                                        </Button>
-                                    </PopoverTrigger>
-                                    <PopoverContent className="w-auto p-0">
-                                        <Calendar
-                                            mode="single"
-                                            selected={task.date}
-                                            onSelect={(selectedDate) => {
-                                                setTask({
-                                                    ...task,
-                                                    date: selectedDate,
-                                                });
-                                            }}
-                                            required={true}
-                                            initialFocus
-                                        />
-                                    </PopoverContent>
-                                </Popover>
-                            </div>
-                            <DialogFooter>
-                                <Button type="submit">Edit</Button>
-                            </DialogFooter>
-                        </form>
-                    </DialogContent>
-                </Dialog>
-            </>
+type ColumnProps = {
+    title: string;
+    headingColor: string;
+    cards: CardType[];
+    column: ColumnType;
+    setCards: Dispatch<SetStateAction<CardType[]>>;
+};
+
+const Column = ({
+    title,
+    column,
+    headingColor,
+    cards,
+    setCards,
+    isToday,
+}: ColumnProps & { isToday: boolean }) => {
+    const [active, setActive] = useState(false);
+
+    const handleDragStart = (e: DragEvent, card: CardType) => {
+        e.dataTransfer.setData('cardId', card.id);
+        e.dataTransfer.setData('docId', card.docId);
+    };
+
+    const handleDragEnd = async (e: DragEvent) => {
+        const cardId = e.dataTransfer.getData('cardId');
+        const docId = e.dataTransfer.getData('docId');
+        setActive(false);
+        clearHighlights();
+
+        const indicators = getIndicators();
+        const { element } = getNearestIndicator(e, indicators);
+
+        const before = element.dataset.before || '-1';
+
+        if (before !== cardId) {
+            let copy = [...cards];
+
+            let cardToTransfer = copy.find((c) => c.id === cardId);
+            if (!cardToTransfer) return;
+            cardToTransfer = { ...cardToTransfer, column };
+
+            copy = copy.filter((c) => c.id !== cardId);
+
+            const moveToBack = before === '-1';
+
+            if (moveToBack) {
+                copy.push(cardToTransfer);
+            } else {
+                const insertAtIndex = copy.findIndex((el) => el.id === before);
+                if (insertAtIndex === undefined) return;
+
+                copy.splice(insertAtIndex, 0, cardToTransfer);
+            }
+
+            setCards(copy);
+
+            // Update card in Firebase Firestore
+            const docRef = doc(db, 'tasks', docId);
+            await updateDoc(docRef, { column });
+        }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+        e.preventDefault();
+        highlightIndicator(e);
+
+        setActive(true);
+    };
+
+    const clearHighlights = (els?: HTMLElement[]) => {
+        const indicators = els || getIndicators();
+
+        indicators.forEach((i) => {
+            i.style.opacity = '0';
+        });
+    };
+
+    const highlightIndicator = (e: DragEvent) => {
+        const indicators = getIndicators();
+
+        clearHighlights(indicators);
+
+        const el = getNearestIndicator(e, indicators);
+
+        el.element.style.opacity = '1';
+    };
+
+    const getNearestIndicator = (e: DragEvent, indicators: HTMLElement[]) => {
+        const DISTANCE_OFFSET = 50;
+
+        const el = indicators.reduce(
+            (closest, child) => {
+                const box = child.getBoundingClientRect();
+
+                const offset = e.clientY - (box.top + DISTANCE_OFFSET);
+
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            },
+            {
+                offset: Number.NEGATIVE_INFINITY,
+                element: indicators[indicators.length - 1],
+            }
         );
+
+        return el;
+    };
+
+    const getIndicators = () => {
+        return Array.from(
+            document.querySelectorAll(
+                `[data-column="${column}"]`
+            ) as unknown as HTMLElement[]
+        );
+    };
+
+    const handleDragLeave = () => {
+        clearHighlights();
+        setActive(false);
+    };
+
+    const filteredCards = cards.filter((c) => c.column === column);
+
+    return (
+        <div className="w-56 shrink-0 m-4">
+            <div className={`mb-3 flex items-center justify-between`}>
+                <h3 className={`font-medium ${headingColor} `}>
+                    {title}{' '}
+                    {isToday ? (
+                        <span className="text-blue-500">Today</span>
+                    ) : null}
+                </h3>
+                <span className="rounded text-sm text-neutral-400">
+                    {filteredCards.length}
+                </span>
+            </div>
+            <div
+                onDrop={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`h-full w-full transition-colors ${
+                    active ? 'bg-neutral-800/50' : 'bg-neutral-800/0'
+                }`}
+            >
+                {filteredCards.map((c) => {
+                    return (
+                        <Card
+                            key={c.id}
+                            {...c}
+                            handleDragStart={handleDragStart}
+                        />
+                    );
+                })}
+                <DropIndicator beforeId={null} column={column} />
+                <AddCard column={column} setCards={setCards} cards={cards} />
+            </div>
+        </div>
+    );
+};
+
+type HandleDragStart = (e: DragEvent, card: CardType) => void;
+
+type CardProps = CardType & {
+    handleDragStart: HandleDragStart;
+};
+
+const Card = ({
+    id,
+    docId,
+    taskName,
+    description,
+    column,
+    handleDragStart,
+}: CardProps) => {
+    return (
+        <>
+            <DropIndicator beforeId={id} column={column} />
+            <motion.div
+                layout
+                layoutId={id}
+                draggable="true"
+                onDragStart={(e) =>
+                    handleDragStart(e, { taskName, id, column, docId })
+                }
+                className="cursor-grab rounded border dark:border-neutral-700 dark:bg-neutral-800  p-3 active:cursor-grabbing"
+            >
+                <p className="text-sm dark:text-neutral-100 text-neutral-800">
+                    {taskName}
+                </p>
+                <p className="text-xs dark:text-neutral-100 text-neutral-800">
+                    {description}
+                </p>
+            </motion.div>
+        </>
+    );
+};
+
+type DropIndicatorProps = {
+    beforeId: string | null;
+    column: string;
+};
+
+const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
+    return (
+        <div
+            data-before={beforeId || '-1'}
+            data-column={column}
+            className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0"
+        />
+    );
+};
+
+const BurnBarrel = ({
+    setCards,
+}: {
+    setCards: Dispatch<SetStateAction<CardType[]>>;
+}) => {
+    const [active, setActive] = useState(false);
+
+    const handleDragOver = (e: DragEvent) => {
+        e.preventDefault();
+        setActive(true);
+    };
+
+    const handleDragLeave = () => {
+        setActive(false);
+    };
+
+    const handleDragEnd = async (e: DragEvent) => {
+        const cardId = e.dataTransfer.getData('cardId');
+        const docId = e.dataTransfer.getData('docId');
+        const docRef = doc(db, 'tasks', docId);
+        await deleteDoc(docRef);
+
+        setCards((pv) => pv.filter((c) => c.id !== cardId));
+
+        setActive(false);
+    };
+
+    return (
+        <div
+            onDrop={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            className={`mt-10 grid h-32 w-32 shrink-0 place-content-center rounded border text-3xl ml-4 flex items-center ${
+                active
+                    ? 'border-red-800 bg-red-800/20 text-red-500'
+                    : 'border-neutral-500 bg-neutral-500/20 text-neutral-500'
+            }`}
+        >
+            {active ? <FaFire className="animate-bounce" /> : <FiTrash />}
+        </div>
+    );
+};
+
+type AddCardProps = {
+    column: ColumnType;
+    // setCards: Dispatch<SetStateAction<CardType[]>>;
+    cards: CardType[];
+};
+
+const AddCard = ({ column, cards }: AddCardProps) => {
+    const session = useSession();
+
+    const [text, setText] = useState('');
+    const [description, setDescription] = useState('');
+    const [adding, setAdding] = useState(false);
+
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!text.trim().length) return;
+
+        const newCard = {
+            column,
+            taskName: text.trim(),
+            description: description.trim() || '',
+            id: (Object.keys(cards).length + 1).toString(),
+            docId: '',
+            email: session?.data?.user?.email || '',
+        };
+
+        AddCardsToFirebase(newCard);
+
+        setText('');
+        setDescription('');
+
+        setAdding(false);
     };
 
     return (
         <>
-            <div className="bg-white w-full transition-all duration-500">
-                <div className="row flex h-[90vh]">
-                    <ResizablePanelGroup
-                        direction="horizontal"
-                        className="border"
-                    >
-                        <ResizablePanel
-                            className="flex flex-col align-center p-3"
-                            defaultSize={15}
-                            minSize={15}
-                            maxSize={50}
+            {adding ? (
+                <motion.form layout onSubmit={handleSubmit}>
+                    <textarea
+                        onChange={(e) => setText(e.target.value)}
+                        autoFocus
+                        placeholder="Add task title"
+                        className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm dark:text-neutral-50 text-neutral-800 placeholder-violet-300 focus:outline-0"
+                    />
+                    <textarea
+                        onChange={(e) => setDescription(e.target.value)}
+                        placeholder="Add task description"
+                        className="w-full rounded border border-violet-400 bg-violet-400/20 p-3 text-sm dark:text-neutral-50 text-neutral-800 placeholder-violet-300 focus:outline-0"
+                    />
+                    <div className="mt-1.5 flex items-center justify-end gap-1.5">
+                        <button
+                            onClick={() => setAdding(false)}
+                            className="px-3 py-1.5 text-xs text-neutral-400 transition-colors hover:text-neutral-5"
                         >
-                            <CreateTasks />
-
-                            <ul>
-                                <Reorder.Group
-                                    values={tasks}
-                                    onReorder={setTasks}
-                                >
-                                    {tasks
-                                        .filter((task) => !task.date) // Filter tasks with null or empty date
-                                        .map(
-                                            (task) => (
-                                                console.log(task),
-                                                (
-                                                    <motion.div
-                                                        key={task.id}
-                                                        draggable="true"
-                                                        className=""
-                                                    >
-                                                        <li
-                                                            key={task.id}
-                                                            className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content cursor-grab active:animate-pulse active:cursor-grabbing"
-                                                        >
-                                                            <div className="flex place-content-between">
-                                                                <h2 className="text-lg font-bold">
-                                                                    {
-                                                                        task.taskName
-                                                                    }
-                                                                </h2>
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger>
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            width="24"
-                                                                            height="24"
-                                                                            viewBox="0 0 24 24"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="2"
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            className="lucide lucide-ellipsis text-slate-400"
-                                                                        >
-                                                                            <circle
-                                                                                cx="12"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                            <circle
-                                                                                cx="19"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                            <circle
-                                                                                cx="5"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                        </svg>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent className="flex flex-col items-start min-w-[3rem] w-full">
-                                                                        {editButton(
-                                                                            task.id,
-                                                                            task.taskName,
-                                                                            task.description,
-                                                                            task.date
-                                                                        )}
-
-                                                                        <Button
-                                                                            variant={
-                                                                                'ghost'
-                                                                            }
-                                                                            className="w-full p-2 flex justify-start"
-                                                                            onClick={() =>
-                                                                                deleteDocument(
-                                                                                    task.id
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                                            Delete
-                                                                        </Button>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </div>
-                                                            <p>
-                                                                {
-                                                                    task.description
-                                                                }
-                                                            </p>
-                                                            <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
-                                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                {task.date || (
-                                                                    <>
-                                                                        <p className="text-slate-400">
-                                                                            No
-                                                                            date
-                                                                        </p>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                            {/* <p>{task.email}</p>
-                                            <p>{task.id}</p> */}
-                                                        </li>
-                                                    </motion.div>
-                                                )
-                                            )
-                                        )}
-                                </Reorder.Group>
-                            </ul>
-                        </ResizablePanel>
-                        <ResizableHandle className="h-screen" />
-
-                        <ResizablePanel className="p-4 flex flex-col">
-                            <div className="dates flex flex-nowrap overflow-x-auto h-full">
-                                {dateRange.map((date) => {
-                                    const currentDate = new Date();
-                                    const isToday =
-                                        date.getDate() ===
-                                            currentDate.getDate() &&
-                                        date.getMonth() ===
-                                            currentDate.getMonth() &&
-                                        date.getFullYear() ===
-                                            currentDate.getFullYear();
-
-                                    // Filter tasks for the current date
-                                    const tasksForDate = tasks.filter(
-                                        (task) => {
-                                            const taskDate = new Date(
-                                                task.date
-                                            );
-                                            return (
-                                                taskDate.getDate() ===
-                                                    date.getDate() &&
-                                                taskDate.getMonth() ===
-                                                    date.getMonth() &&
-                                                taskDate.getFullYear() ===
-                                                    date.getFullYear()
-                                            );
-                                        }
-                                    );
-
-                                    return (
-                                        <div
-                                            key={date.toISOString()}
-                                            className={`flex flex-col items-center`}
-                                            onDragEnter={(e) => {
-                                                e.preventDefault();
-                                                console.log(date);
-                                            }}
-                                        >
-                                            <div className="date bg-slate-200 date-item flex-shrink-0 h-16 p-4 m-2 flex items-center justify-center  rounded-md">
-                                                <h1 className="font-medium mx-2">
-                                                    {new Date(
-                                                        date
-                                                    ).toLocaleDateString(
-                                                        'en-US',
-                                                        {
-                                                            weekday: 'short',
-                                                        }
-                                                    )}
-                                                </h1>
-
-                                                <h1 className="text-slate-500 font-medium">
-                                                    {new Date(
-                                                        date
-                                                    ).toLocaleDateString(
-                                                        'en-US',
-                                                        {
-                                                            month: 'short',
-                                                        }
-                                                    )}
-                                                    <span className="mx-2">
-                                                        {new Date(
-                                                            date
-                                                        ).toLocaleDateString(
-                                                            'en-US',
-                                                            {
-                                                                day: 'numeric',
-                                                            }
-                                                        )}
-                                                    </span>
-                                                </h1>
-                                                {isToday && (
-                                                    <span className="ml-2 text-xs text-blue-600">
-                                                        Today
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            {/* Render tasks for this date */}
-                                            {tasksForDate.map((task) => {
-                                                return (
-                                                    <motion.div key={task.id}>
-                                                        <li
-                                                            draggable="true"
-                                                            key={task.id}
-                                                            className="flex flex-col border border-slate-300 p-3 my-3  min-w-32 rounded-lg max-w-content cursor-grab active:animate-pulse active:cursor-grabbing"
-                                                        >
-                                                            <div className="flex place-content-between">
-                                                                <h2 className="text-base font-bold">
-                                                                    {
-                                                                        task.taskName
-                                                                    }
-                                                                </h2>
-                                                                <DropdownMenu>
-                                                                    <DropdownMenuTrigger>
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            width="24"
-                                                                            height="24"
-                                                                            viewBox="0 0 24 24"
-                                                                            fill="none"
-                                                                            stroke="currentColor"
-                                                                            strokeWidth="2"
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            className="lucide lucide-ellipsis text-slate-400"
-                                                                        >
-                                                                            <circle
-                                                                                cx="12"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                            <circle
-                                                                                cx="19"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                            <circle
-                                                                                cx="5"
-                                                                                cy="12"
-                                                                                r="1"
-                                                                            />
-                                                                        </svg>
-                                                                    </DropdownMenuTrigger>
-                                                                    <DropdownMenuContent className="flex flex-col items-start min-w-[3rem] w-full">
-                                                                        {editButton(
-                                                                            task.id,
-                                                                            task.taskName,
-                                                                            task.description,
-                                                                            task.date
-                                                                        )}
-
-                                                                        <Button
-                                                                            variant={
-                                                                                'ghost'
-                                                                            }
-                                                                            className="w-full p-2 flex justify-start"
-                                                                            onClick={() =>
-                                                                                deleteDocument(
-                                                                                    task.id
-                                                                                )
-                                                                            }
-                                                                        >
-                                                                            <Trash2 className="w-4 h-4 mr-2" />
-                                                                            Delete
-                                                                        </Button>
-                                                                    </DropdownMenuContent>
-                                                                </DropdownMenu>
-                                                            </div>
-                                                            <p className="text-sm">
-                                                                {
-                                                                    task.description
-                                                                }
-                                                            </p>
-                                                            <div className="inline-flex items-center border border-white p-1 rounded-lg max-w-44 bg-slate-100">
-                                                                <CalendarIcon className="mr-2 h-4 w-4" />
-                                                                {(
-                                                                    <>
-                                                                        <p className="text-slate-400 text-sm">
-                                                                            {' '}
-                                                                            {
-                                                                                task.date
-                                                                            }{' '}
-                                                                        </p>
-                                                                    </>
-                                                                ) || (
-                                                                    <>
-                                                                        <p className="text-slate-400 text-sm">
-                                                                            No
-                                                                            date
-                                                                        </p>
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                            {/* <p>{task.email}</p>
-                                            <p>{task.id}</p> */}
-                                                        </li>
-                                                    </motion.div>
-                                                );
-                                            })}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </ResizablePanel>
-                    </ResizablePanelGroup>
-                </div>
-            </div>
+                            Close
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex items-center gap-1.5 rounded bg-neutral-50 px-3 py-1.5 text-xs text-neutral-950 transition-colors hover:bg-neutral-300"
+                        >
+                            <span>Add</span>
+                            <FiPlus />
+                        </button>
+                    </div>
+                </motion.form>
+            ) : (
+                <motion.button
+                    layout
+                    onClick={() => setAdding(true)}
+                    className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors dark:hover:text-neutral-50 hover:text-neutral-300"
+                >
+                    <span>Add task</span>
+                    <FiPlus />
+                </motion.button>
+            )}
         </>
     );
-}
+};
 
-App.requireAuth = true;
+type ColumnType = string;
+
+type CardType = {
+    taskName: string;
+    description: string;
+    docId: string;
+    id: string;
+    email: string;
+    column: ColumnType;
+};
+
+// const DEFAULT_CARDS: CardType[] = [
+//     // BACKLOG
+//     { title: 'Look into render bug in dashboard', id: '1', column: 'backlog' },
+//     { title: 'SOX compliance checklist', id: '2', column: 'backlog' },
+//     { title: '[SPIKE] Migrate to Azure', id: '3', column: 'backlog' },
+//     { title: 'Document Notifications service', id: '4', column: 'backlog' },
+//     // TODO
+//     {
+//         title: 'Research DB options for new microservice',
+//         id: '5',
+//         column: 'todo',
+//     },
+//     { title: 'Postmortem for outage', id: '6', column: 'todo' },
+//     { title: 'Sync with product on Q3 roadmap', id: '7', column: 'todo' },
+
+//     // DOING
+//     {
+//         title: 'Refactor context providers to use Zustand',
+//         id: '8',
+//         column: 'doing',
+//     },
+//     { title: 'Add logging to daily CRON', id: '9', column: 'doing' },
+//     // DONE
+//     {
+//         title: 'Set up DD dashboards for Lambda listener',
+//         id: '10',
+//         column: 'done',
+//     },
+// ];
+
+export default Calendar;
