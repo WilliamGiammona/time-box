@@ -8,7 +8,7 @@ import React, {
     useRef,
     useEffect,
 } from 'react';
-import { FiPlus, FiTrash, FiEdit2 } from 'react-icons/fi';
+import { FiPlus, FiTrash } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { FaFire } from 'react-icons/fa';
 import {
@@ -39,18 +39,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-
-import {
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from '@/components/ui/dialog';
-
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 
 const options: Intl.DateTimeFormatOptions = {
     weekday: 'short',
@@ -165,7 +153,6 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
                         description: data.description,
                         email: data.userEmail,
                         column: date,
-                        hour: data.hour,
                     };
                 })
             );
@@ -185,162 +172,20 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
             // Set the scroll position
             boardRef.current.scrollLeft = scrollLeft;
         }
-    }, []);
+    }, [dates]);
 
     const DayView = () => {
         return (
-            <div ref={boardRef} className="flex overflow-scroll h-full w-full">
-                <div className="sticky left-0 mr-10 ">
-                    {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                        <div className="relative h-28" key={hour}>
-                            <div className="absolute inset-0 flex items-center ">
-                                <div
-                                    className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                                >
-                                    {hour}:00
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                {dates
-                    .filter((dateObj) => dateObj.date !== 'braindump')
-                    .map((dateObj) => (
-                        <HourColumn
-                            key={dateObj.date}
-                            title={dateObj.date}
-                            column={dateObj.date}
-                            headingColor="text-neutral-500"
-                            cards={cards}
-                            setCards={setCards}
-                            isToday={dateObj.isToday}
-                        />
-                    ))}
-            </div>
-        );
-    };
-
-    const HourSection = ({
-        hour,
-        cards,
-        handleDragOver,
-        handleDragEnd,
-        handleDragStart,
-        activeHour,
-        indicators,
-    }) => {
-        const filteredCards = cards.filter((c) => c.hour === hour);
-
-        return (
-            <div
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDragEnd(e)}
-                className={`hour-section relative h-28 ${
-                    activeHour == hour &&
-                    `bg-violet-400/20 border border-violet-400 rounded-lg`
-                }`}
-            >
-                <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
-                    <div
-                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                    ></div>
-                </div>
-                <div className="">
-                    {filteredCards.map((card) => (
-                        <Card
-                            key={card.id}
-                            handleDragStart={handleDragStart}
-                            {...card}
-                            indicators={indicators}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    type HourColumnProps = {
-        title: string;
-        column: ColumnType;
-        headingColor: string;
-        cards: CardType[];
-        setCards: Dispatch<SetStateAction<CardType[]>>;
-        isToday: boolean;
-    };
-
-    const HourColumn = ({
-        title,
-        column,
-        headingColor,
-        cards,
-        setCards,
-        isToday,
-    }: HourColumnProps) => {
-        const [activeHour, setActiveHour] = useState<number | null>(null);
-        const [indicators, showIndicators] = useState(false);
-
-        const handleDragStart = (e: DragEvent, card: CardType) => {
-            e.dataTransfer.setData('cardId', card.id);
-            e.dataTransfer.setData('docId', card.docId);
-            showIndicators(true);
-        };
-
-        const handleDragOver = (e: DragEvent, hour: number) => {
-            e.preventDefault();
-            setActiveHour(hour);
-        };
-
-        const handleDragEnd = async (e: DragEvent, targetHour: number) => {
-            e.preventDefault();
-            const cardId = e.dataTransfer.getData('cardId');
-            const docId = e.dataTransfer.getData('docId');
-            setActiveHour(null);
-            showIndicators(false);
-
-            const card = cards.find((c) => c.id === cardId);
-            if (!card) return;
-
-            const updatedCards = cards.map((c) => {
-                if (c.id === cardId) {
-                    return { ...c, column, hour: targetHour };
-                }
-                return c;
-            });
-
-            setCards(updatedCards);
-
-            // Update card in Firebase Firestore
-            const docRef = doc(db, 'tasks', docId);
-            await updateDoc(docRef, { column, hour: targetHour });
-        };
-
-        return (
-            <div
-                className={`${calendarView === 'week' || calendarView === 'month' ? `w-56` : `w-[68vw]`} shrink-0 m-4 relative h-full`}
-            >
-                <div
-                    className={`mb-3 flex items-center justify-between sticky top-0`}
-                >
-                    <h3 className={`font-medium ${headingColor} `}>
-                        {title}{' '}
-                        {isToday ? (
-                            <span className="text-blue-500">Today</span>
-                        ) : null}
-                    </h3>
-                    <span className="self-end rounded text-sm text-neutral-400">
-                        {cards.filter((c) => c.column === column).length}
-                    </span>
-                </div>
-                {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                    <HourSection
-                        key={hour}
-                        hour={hour}
-                        cards={cards.filter((c) => c.column === column)}
-                        handleDragOver={(e) => handleDragOver(e, hour)}
-                        handleDragEnd={(e) => handleDragEnd(e, hour)}
-                        handleDragStart={handleDragStart}
-                        activeHour={activeHour}
-                        indicators={indicators}
+            <div ref={boardRef} className="flex overflow-scroll h-full">
+                {dates.map((dateObj) => (
+                    <Column
+                        key={dateObj.date}
+                        title={dateObj.date}
+                        column={dateObj.date}
+                        headingColor="text-neutral-500"
+                        cards={cards}
+                        setCards={setCards}
+                        isToday={dateObj.isToday}
                     />
                 ))}
             </div>
@@ -350,42 +195,17 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
     const WeekView = () => {
         return (
             <div ref={boardRef} className="flex overflow-scroll h-full">
-                <>
-                    {/* <div className="relative">
-                    {hoursArray.map((hour) => (
-                        <React.Fragment key={hour}>
-                            <div className="my-20">{hour}:00</div>
-                            <hr className="absolute w-[250vw] z-[1]"></hr>
-                        </React.Fragment>
-                    ))}
-                </div> */}
-                    <div className="sticky left-0 ">
-                        {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                            <div className="relative h-28" key={hour}>
-                                <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
-                                    <div
-                                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                                    >
-                                        {hour}:00
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    {dates
-                        .filter((dateObj) => dateObj.date !== 'braindump')
-                        .map((dateObj) => (
-                            <HourColumn
-                                key={dateObj.date}
-                                title={dateObj.date}
-                                column={dateObj.date}
-                                headingColor="text-neutral-500"
-                                cards={cards}
-                                setCards={setCards}
-                                isToday={dateObj.isToday}
-                            />
-                        ))}
-                </>
+                {dates.map((dateObj) => (
+                    <Column
+                        key={dateObj.date}
+                        title={dateObj.date}
+                        column={dateObj.date}
+                        headingColor="text-neutral-500"
+                        cards={cards}
+                        setCards={setCards}
+                        isToday={dateObj.isToday}
+                    />
+                ))}
             </div>
         );
     };
@@ -465,7 +285,7 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
                         Brain Dump🧠
                     </h2>
 
-                    <div className="py-8 tasks">
+                    <div className="tasks">
                         <>
                             <Column
                                 title={'Tasks'}
@@ -557,6 +377,7 @@ const Column = ({
     const handleDragOver = (e: DragEvent) => {
         e.preventDefault();
         highlightIndicator(e);
+
         setActive(true);
     };
 
@@ -640,17 +461,14 @@ const Column = ({
             >
                 {filteredCards.map((c) => {
                     return (
-                        <>
-                            <Card
-                                key={c.id}
-                                {...c}
-                                handleDragStart={handleDragStart}
-                            />
-                        </>
+                        <Card
+                            key={c.id}
+                            {...c}
+                            handleDragStart={handleDragStart}
+                        />
                     );
                 })}
                 <DropIndicator beforeId={null} column={column} />
-
                 <AddCard column={column} setCards={setCards} cards={cards} />
             </div>
         </div>
@@ -670,89 +488,26 @@ const Card = ({
     description,
     column,
     handleDragStart,
-    indicators,
 }: CardProps) => {
-    const [dialogOpen, setDialogOpen] = useState(false);
-
-    const editCard = async (e: FormEvent<HTMLFormElement>, docId: string) => {
-        e.preventDefault();
-        console.log(e);
-        console.log(docId);
-
-        await updateDoc(doc(db, 'tasks', docId), {
-            taskName: newTaskName,
-            description: newTaskDescription,
-        });
-        setNewTaskName('');
-        setNewTaskDescription('');
-    };
-
-    const [newTaskName, setNewTaskName] = useState('');
-    const [newTaskDescription, setNewTaskDescription] = useState('');
     return (
         <>
-            {indicators && (
-                <>
-                    <DropIndicator beforeId={id} column={column} />
-                </>
-            )}
-
-            <motion.form
+            <DropIndicator beforeId={id} column={column} />
+            <motion.div
                 layout
                 layoutId={id}
                 draggable="true"
                 onDragStart={(e) =>
                     handleDragStart(e, { taskName, id, column, docId })
                 }
-                className="group max-w-[500px] flex justify-between relative z-[10] cursor-grab rounded border dark:border-neutral-700 dark:bg-neutral-800  p-3 active:cursor-grabbing"
+                className="cursor-grab rounded border dark:border-neutral-700 dark:bg-neutral-800  p-3 active:cursor-grabbing"
             >
-                <div className="flex flex-col">
-                    <p className="text-sm dark:text-neutral-100 text-neutral-800">
-                        {taskName}
-                    </p>
-                    <p className="text-xs dark:text-neutral-100 text-neutral-800">
-                        {description}
-                    </p>
-                </div>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild>
-                        <FiEdit2 className="invert dark:invert-0 opacity-0 transition-all duration-300 group-hover:opacity-100 hover:cursor-pointer" />
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>Edit Task</DialogTitle>
-
-                            <label htmlFor="taskName">Name</label>
-                            <Input
-                                placeholder={taskName}
-                                id="taskName"
-                                onChange={(e) => setNewTaskName(e.target.value)}
-                                className="placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
-                            />
-                            <label htmlFor="taskDescription">Description</label>
-                            <Textarea
-                                placeholder={description}
-                                onChange={(e) =>
-                                    setNewTaskDescription(e.target.value)
-                                }
-                                id="taskDescription"
-                                className="placeholder:text-neutral-400 dark:placeholder:text-neutral-500"
-                            />
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Button
-                                type="submit"
-                                onClick={(e) => {
-                                    editCard(e, docId);
-                                    setDialogOpen(false);
-                                }}
-                            >
-                                Edit Task
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </motion.form>
+                <p className="text-sm dark:text-neutral-100 text-neutral-800">
+                    {taskName}
+                </p>
+                <p className="text-xs dark:text-neutral-100 text-neutral-800">
+                    {description}
+                </p>
+            </motion.div>
         </>
     );
 };
@@ -767,7 +522,7 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
         <div
             data-before={beforeId || '-1'}
             data-column={column}
-            className="my-0.5 h-0.5 w-full bg-violet-400"
+            className="my-0.5 h-0.5 w-full bg-violet-400 opacity-0"
         />
     );
 };
@@ -840,7 +595,6 @@ const AddCard = ({ column, cards }: AddCardProps) => {
             id: (Object.keys(cards).length + 1).toString(),
             docId: '',
             email: session?.data?.user?.email || '',
-            hour: '',
         };
 
         AddCardsToFirebase(newCard);
@@ -853,7 +607,7 @@ const AddCard = ({ column, cards }: AddCardProps) => {
     return (
         <>
             {adding ? (
-                <motion.form layout onSubmit={handleSubmit} className="z-10">
+                <motion.form layout onSubmit={handleSubmit}>
                     <textarea
                         onChange={(e) => setText(e.target.value)}
                         autoFocus
@@ -885,10 +639,10 @@ const AddCard = ({ column, cards }: AddCardProps) => {
                 <motion.button
                     layout
                     onClick={() => setAdding(true)}
-                    className="z-10 flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors dark:hover:text-neutral-50 hover:text-neutral-300"
+                    className="flex w-full items-center gap-1.5 px-3 py-1.5 text-xs text-neutral-400 transition-colors dark:hover:text-neutral-50 hover:text-neutral-300"
                 >
-                    <span className="z-10">Add task</span>
-                    <FiPlus className="z-10" />
+                    <span>Add task</span>
+                    <FiPlus />
                 </motion.button>
             )}
         </>
@@ -905,5 +659,35 @@ type CardType = {
     email: string;
     column: ColumnType;
 };
+
+// const DEFAULT_CARDS: CardType[] = [
+//     // BACKLOG
+//     { title: 'Look into render bug in dashboard', id: '1', column: 'backlog' },
+//     { title: 'SOX compliance checklist', id: '2', column: 'backlog' },
+//     { title: '[SPIKE] Migrate to Azure', id: '3', column: 'backlog' },
+//     { title: 'Document Notifications service', id: '4', column: 'backlog' },
+//     // TODO
+//     {
+//         title: 'Research DB options for new microservice',
+//         id: '5',
+//         column: 'todo',
+//     },
+//     { title: 'Postmortem for outage', id: '6', column: 'todo' },
+//     { title: 'Sync with product on Q3 roadmap', id: '7', column: 'todo' },
+
+//     // DOING
+//     {
+//         title: 'Refactor context providers to use Zustand',
+//         id: '8',
+//         column: 'doing',
+//     },
+//     { title: 'Add logging to daily CRON', id: '9', column: 'doing' },
+//     // DONE
+//     {
+//         title: 'Set up DD dashboards for Lambda listener',
+//         id: '10',
+//         column: 'done',
+//     },
+// ];
 
 export default Calendar;
