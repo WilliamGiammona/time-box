@@ -7,10 +7,11 @@ import React, {
     FormEvent,
     useRef,
     useEffect,
+    useMemo,
 } from 'react';
 import { FiPlus, FiTrash, FiEdit2 } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import { FaFire } from 'react-icons/fa';
+import { FaFire, FaAngleLeft, FaAngleRight } from 'react-icons/fa';
 import {
     addDoc,
     collection,
@@ -60,47 +61,81 @@ const options: Intl.DateTimeFormatOptions = {
 
 export const Calendar = () => {
     const [calendarView, setCalendarView] = useState('week');
+    const [today, setToday] = useState(new Date());
+    const [dates, setDates] = useState<{ date: string; isToday: boolean }[]>(
+        []
+    );
+    const [isToday, setIsToday] = useState(true);
 
-    const today = new Date();
+    const incrementDate = (daysToAdd: number) => {
+        setToday((prevDate) => {
+            const newDate = new Date(prevDate);
+            newDate.setDate(newDate.getDate() + daysToAdd);
+            return newDate;
+        });
+    };
 
-    const dates: { date: string; isToday: boolean }[] = [];
+    const incrementMonth = (monthsToAdd: number) => {
+        setToday((prevDate) => {
+            const newDate = new Date(prevDate);
+            newDate.setMonth(newDate.getMonth() + monthsToAdd);
+            return newDate;
+        });
+    };
 
-    if (calendarView === 'day') {
-        const date = new Date(today);
+    const calculateDates = (today: Date, calendarView: string) => {
+        const dates = [];
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        // const options = {
+        //     weekday: 'short',
+        //     month: 'short',
+        //     day: 'numeric',
+        // };
 
-        date.setDate(today.getDate());
-        const formattedDate = date.toLocaleDateString('en-US', options);
-
-        const isToday = date.toDateString() === today.toDateString(); // Check if date is today
-
-        dates.push({ date: formattedDate, isToday });
-    }
-
-    if (calendarView === 'month') {
-        for (let i = -15; i <= 15; i++) {
+        if (calendarView === 'day') {
             const date = new Date(today);
-
-            date.setDate(today.getDate() + i);
             const formattedDate = date.toLocaleDateString('en-US', options);
-
-            const isToday = date.toDateString() === today.toDateString(); // Check if date is today
-
+            const isToday = date.toDateString() === new Date().toDateString(); // Check if date matches current date
             dates.push({ date: formattedDate, isToday });
         }
-    }
 
-    if (calendarView === 'week') {
-        for (let i = -7; i <= 7; i++) {
-            const date = new Date(today);
-
-            date.setDate(today.getDate() + i);
-            const formattedDate = date.toLocaleDateString('en-US', options);
-
-            const isToday = date.toDateString() === today.toDateString(); // Check if date is today
-
-            dates.push({ date: formattedDate, isToday });
+        if (calendarView === 'week') {
+            for (let i = -6; i <= 0; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() + i);
+                const formattedDate = date.toLocaleDateString('en-US', options);
+                const isToday =
+                    date.toDateString() === new Date().toDateString(); // Check if date matches current date
+                dates.push({ date: formattedDate, isToday });
+            }
         }
-    }
+
+        if (calendarView === 'month') {
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+            const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+
+            for (
+                let date = firstDayOfMonth;
+                date <= lastDayOfMonth;
+                date.setDate(date.getDate() + 1)
+            ) {
+                const formattedDate = date.toLocaleDateString('en-US', options);
+                const isToday =
+                    date.toDateString() === new Date().toDateString(); // Check if date matches current date
+                dates.push({ date: formattedDate, isToday });
+            }
+        }
+
+        return dates;
+    };
+
+    useMemo(() => {
+        const newDates = calculateDates(today, calendarView);
+        setDates(newDates);
+
+        setIsToday(newDates.some((dateObj) => dateObj.isToday));
+    }, [today, calendarView]);
 
     console.log(dates);
     return (
@@ -110,6 +145,9 @@ export const Calendar = () => {
                     dates={dates}
                     calendarView={calendarView}
                     setCalendarView={setCalendarView}
+                    incrementDate={incrementDate}
+                    incrementMonth={incrementMonth}
+                    isToday={isToday}
                 />
             </div>
         </>
@@ -120,6 +158,9 @@ interface BoardProps {
     dates: { date: string; isToday: boolean }[];
     calendarView: string;
     setCalendarView: React.Dispatch<React.SetStateAction<string>>;
+    incrementDate: (daysToAdd: number) => void;
+    incrementMonth: (monthsToAdd: number) => void;
+    isToday: boolean;
 }
 
 async function AddCardsToFirebase(newCard: CardType) {
@@ -127,7 +168,13 @@ async function AddCardsToFirebase(newCard: CardType) {
     await addDoc(tasksCollection, newCard);
 }
 
-const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
+const Board = ({
+    dates,
+    calendarView,
+    setCalendarView,
+    incrementDate,
+    incrementMonth,
+}: BoardProps) => {
     const session = useSession();
     const [cards, setCards] = useState<CardType[]>([]);
 
@@ -189,34 +236,53 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
 
     const DayView = () => {
         return (
-            <div ref={boardRef} className="flex overflow-scroll h-full w-full">
-                <div className="sticky left-0 mr-10 ">
-                    {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                        <div className="relative h-28" key={hour}>
-                            <div className="absolute inset-0 flex items-center ">
-                                <div
-                                    className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                                >
-                                    {hour}:00
+            <>
+                <div className="date__changer flex gap-x-4">
+                    <button
+                        onClick={() => incrementDate(-1)}
+                        className="bg-neutral-800 text-neutral-50 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleLeft />
+                    </button>
+                    <button
+                        onClick={() => incrementDate(1)}
+                        className="bg-neutral-800 text-neutral-50 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleRight />
+                    </button>
+                </div>
+                <div
+                    ref={boardRef}
+                    className="flex overflow-scroll h-full w-full"
+                >
+                    <div className="sticky left-0 mr-10 ">
+                        {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                            <div className="relative h-28" key={hour}>
+                                <div className="absolute inset-0 flex items-center ">
+                                    <div
+                                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
+                                    >
+                                        {hour}:00
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                    </div>
+                    {dates
+                        .filter((dateObj) => dateObj.date !== 'braindump')
+                        .map((dateObj) => (
+                            <HourColumn
+                                key={dateObj.date}
+                                title={dateObj.date}
+                                column={dateObj.date}
+                                headingColor="text-neutral-500"
+                                cards={cards}
+                                setCards={setCards}
+                                isToday={dateObj.isToday}
+                            />
+                        ))}
                 </div>
-                {dates
-                    .filter((dateObj) => dateObj.date !== 'braindump')
-                    .map((dateObj) => (
-                        <HourColumn
-                            key={dateObj.date}
-                            title={dateObj.date}
-                            column={dateObj.date}
-                            headingColor="text-neutral-500"
-                            cards={cards}
-                            setCards={setCards}
-                            isToday={dateObj.isToday}
-                        />
-                    ))}
-            </div>
+            </>
         );
     };
 
@@ -349,9 +415,24 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
 
     const WeekView = () => {
         return (
-            <div ref={boardRef} className="flex overflow-scroll h-full">
-                <>
-                    {/* <div className="relative">
+            <div className="flex flex-col overflow-scroll h-full">
+                <div className="date__changer flex gap-x-4">
+                    <button
+                        onClick={() => incrementDate(-7)}
+                        className="bg-neutral-200  text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleLeft />
+                    </button>
+                    <button
+                        onClick={() => incrementDate(7)}
+                        className="bg-neutral-200  text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleRight />
+                    </button>
+                </div>
+                <div ref={boardRef} className="flex overflow-scroll h-full">
+                    <>
+                        {/* <div className="relative">
                     {hoursArray.map((hour) => (
                         <React.Fragment key={hour}>
                             <div className="my-20">{hour}:00</div>
@@ -359,55 +440,75 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
                         </React.Fragment>
                     ))}
                 </div> */}
-                    <div className="sticky left-0 ">
-                        {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                            <div className="relative h-28" key={hour}>
-                                <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
-                                    <div
-                                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                                    >
-                                        {hour}:00
+                        <div className="sticky left-0 ">
+                            {Array.from({ length: 24 }, (_, i) => i).map(
+                                (hour) => (
+                                    <div className="relative h-28" key={hour}>
+                                        <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
+                                            <div
+                                                className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
+                                            >
+                                                {hour}:00
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                    {dates
-                        .filter((dateObj) => dateObj.date !== 'braindump')
-                        .map((dateObj) => (
-                            <HourColumn
-                                key={dateObj.date}
-                                title={dateObj.date}
-                                column={dateObj.date}
-                                headingColor="text-neutral-500"
-                                cards={cards}
-                                setCards={setCards}
-                                isToday={dateObj.isToday}
-                            />
-                        ))}
-                </>
+                                )
+                            )}
+                        </div>
+                        {dates
+                            .filter((dateObj) => dateObj.date !== 'braindump')
+                            .map((dateObj) => (
+                                <HourColumn
+                                    key={dateObj.date}
+                                    title={dateObj.date}
+                                    column={dateObj.date}
+                                    headingColor="text-neutral-500"
+                                    cards={cards}
+                                    setCards={setCards}
+                                    isToday={dateObj.isToday}
+                                />
+                            ))}
+                    </>
+                </div>
             </div>
         );
     };
 
     const MonthView = () => {
         return (
-            <div
-                ref={boardRef}
-                className="flex flex-wrap justify-center overflow-scroll h-full"
-            >
-                {dates.map((dateObj) => (
-                    <Column
-                        key={dateObj.date}
-                        title={dateObj.date}
-                        column={dateObj.date}
-                        headingColor="text-neutral-500"
-                        cards={cards}
-                        setCards={setCards}
-                        isToday={dateObj.isToday}
-                    />
-                ))}
-            </div>
+            <>
+                <div className="date__changer flex gap-x-4">
+                    <button
+                        onClick={() => incrementMonth(-1)}
+                        className="bg-neutral-800 text-neutral-50 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleLeft />
+                    </button>
+                    <button
+                        onClick={() => incrementMonth(1)}
+                        className="bg-neutral-800 text-neutral-50 text-xl p-2 rounded-full"
+                    >
+                        <FaAngleRight />
+                    </button>
+                </div>
+                <div
+                    ref={boardRef}
+                    className="flex flex-wrap justify-center overflow-scroll h-full"
+                >
+                    {dates.map((dateObj) => (
+                        <Column
+                            key={dateObj.date}
+                            title={dateObj.date}
+                            column={dateObj.date}
+                            headingColor="text-neutral-500"
+                            cards={cards}
+                            setCards={setCards}
+                            isToday={dateObj.isToday}
+                            calendarView={calendarView}
+                        />
+                    ))}
+                </div>
+            </>
         );
     };
 
@@ -421,7 +522,7 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
                         onValueChange={(value) => setCalendarView(value)}
                         defaultValue="week"
                     >
-                        <SelectTrigger className="w-[180px]">
+                        <SelectTrigger className="w-[180px] text-neutral-800 dark:text-neutral-50">
                             <SelectValue placeholder="Calendar" />
                         </SelectTrigger>
                         <SelectContent>
@@ -448,7 +549,9 @@ const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
                             </SelectGroup>
                         </SelectContent>
                     </Select>
-                    <Button className="max-w-32">Read Calendar</Button>
+                    <Button className="ml-4 max-w-32 hover:cursor-not-allowed">
+                        Read Calendar
+                    </Button>
                 </div>
             </div>
             <ResizablePanelGroup
@@ -498,6 +601,7 @@ type ColumnProps = {
     cards: CardType[];
     column: ColumnType;
     setCards: Dispatch<SetStateAction<CardType[]>>;
+    calendarView: string;
 };
 
 const Column = ({
@@ -507,6 +611,7 @@ const Column = ({
     cards,
     setCards,
     isToday,
+    calendarView,
 }: ColumnProps & { isToday: boolean }) => {
     const [active, setActive] = useState(false);
 
@@ -618,7 +723,9 @@ const Column = ({
     const filteredCards = cards.filter((c) => c.column === column);
 
     return (
-        <div className={`w-56 shrink-0 m-4`}>
+        <div
+            className={`${calendarView === 'month' && 'border rounded-lg p-2'} w-56 shrink-0 m-4`}
+        >
             <div className={`mb-3 flex items-center justify-between`}>
                 <h3 className={`font-medium ${headingColor} `}>
                     {title}{' '}
@@ -747,7 +854,7 @@ const Card = ({
                                     setDialogOpen(false);
                                 }}
                             >
-                                Edit Task
+                                Confirm Edit
                             </Button>
                         </DialogFooter>
                     </DialogContent>
@@ -767,7 +874,7 @@ const DropIndicator = ({ beforeId, column }: DropIndicatorProps) => {
         <div
             data-before={beforeId || '-1'}
             data-column={column}
-            className="my-0.5 h-0.5 w-full bg-violet-400"
+            className="my-0.5 h-0.5 w-full"
         />
     );
 };
