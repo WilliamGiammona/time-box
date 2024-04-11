@@ -4,9 +4,12 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import appMockupLight from '@/assets/evocal-mockup-light.png';
 import appMockupDark from '@/assets/evocal-mockup-dark.png';
+import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 export default function Home() {
     const router = useRouter();
+    const session = useSession();
 
     return (
         <>
@@ -21,7 +24,22 @@ export default function Home() {
                     </h2>
                     <Button
                         className="my-5"
-                        onClick={() => router.push('/test')}
+                        onClick={() => {
+                            router.push('/calendar');
+                            if (!session.data?.user) {
+                                toast('❌ Cannot access page', {
+                                    description:
+                                        'You must be signed in to access this',
+                                    action: {
+                                        label: 'Ok',
+                                        onClick: () =>
+                                            console.log(
+                                                'Sign in to access the calendar page'
+                                            ),
+                                    },
+                                });
+                            }
+                        }}
                     >
                         Get started
                     </Button>

@@ -28,6 +28,17 @@ import {
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectLabel,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const options: Intl.DateTimeFormatOptions = {
     weekday: 'short',
@@ -36,40 +47,81 @@ const options: Intl.DateTimeFormatOptions = {
 };
 
 export const Calendar = () => {
+    const [calendarView, setCalendarView] = useState('week');
+
     const today = new Date();
 
     const dates: { date: string; isToday: boolean }[] = [];
 
-    for (let i = -7; i <= 7; i++) {
+    if (calendarView === 'day') {
         const date = new Date(today);
 
-        date.setDate(today.getDate() + i);
+        date.setDate(today.getDate());
         const formattedDate = date.toLocaleDateString('en-US', options);
 
         const isToday = date.toDateString() === today.toDateString(); // Check if date is today
 
         dates.push({ date: formattedDate, isToday });
     }
+
+    if (calendarView === 'month') {
+        for (let i = -15; i <= 15; i++) {
+            const date = new Date(today);
+
+            date.setDate(today.getDate() + i);
+            const formattedDate = date.toLocaleDateString('en-US', options);
+
+            const isToday = date.toDateString() === today.toDateString(); // Check if date is today
+
+            dates.push({ date: formattedDate, isToday });
+        }
+    }
+
+    if (calendarView === 'week') {
+        for (let i = -7; i <= 7; i++) {
+            const date = new Date(today);
+
+            date.setDate(today.getDate() + i);
+            const formattedDate = date.toLocaleDateString('en-US', options);
+
+            const isToday = date.toDateString() === today.toDateString(); // Check if date is today
+
+            dates.push({ date: formattedDate, isToday });
+        }
+    }
+
+    console.log(dates);
     return (
-        <div className="h-[91vh] w-full bg-neutral-100 dark:bg-neutral-900 text-neutral-50">
-            <Board dates={dates} />
-        </div>
+        <>
+            <div className="h-[91vh] w-full bg-neutral-100 dark:bg-neutral-900 text-neutral-50">
+                <Board
+                    dates={dates}
+                    calendarView={calendarView}
+                    setCalendarView={setCalendarView}
+                />
+            </div>
+        </>
     );
 };
 
 interface BoardProps {
     dates: { date: string; isToday: boolean }[];
+    calendarView: string;
+    setCalendarView: React.Dispatch<React.SetStateAction<string>>;
 }
 
 async function AddCardsToFirebase(newCard: CardType) {
-    console.log(newCard);
     const tasksCollection = collection(db, 'tasks');
     await addDoc(tasksCollection, newCard);
 }
 
-const Board = ({ dates }: BoardProps) => {
+const Board = ({ dates, calendarView, setCalendarView }: BoardProps) => {
     const session = useSession();
     const [cards, setCards] = useState<CardType[]>([]);
+
+    useEffect(() => {
+        console.log(calendarView);
+    }, [calendarView]);
 
     useEffect(() => {
         console.log(cards);
@@ -122,9 +174,107 @@ const Board = ({ dates }: BoardProps) => {
         }
     }, [dates]);
 
+    const DayView = () => {
+        return (
+            <div ref={boardRef} className="flex overflow-scroll h-full">
+                {dates.map((dateObj) => (
+                    <Column
+                        key={dateObj.date}
+                        title={dateObj.date}
+                        column={dateObj.date}
+                        headingColor="text-neutral-500"
+                        cards={cards}
+                        setCards={setCards}
+                        isToday={dateObj.isToday}
+                    />
+                ))}
+            </div>
+        );
+    };
+
+    const WeekView = () => {
+        return (
+            <div ref={boardRef} className="flex overflow-scroll h-full">
+                {dates.map((dateObj) => (
+                    <Column
+                        key={dateObj.date}
+                        title={dateObj.date}
+                        column={dateObj.date}
+                        headingColor="text-neutral-500"
+                        cards={cards}
+                        setCards={setCards}
+                        isToday={dateObj.isToday}
+                    />
+                ))}
+            </div>
+        );
+    };
+
+    const MonthView = () => {
+        return (
+            <div
+                ref={boardRef}
+                className="flex flex-wrap justify-center overflow-scroll h-full"
+            >
+                {dates.map((dateObj) => (
+                    <Column
+                        key={dateObj.date}
+                        title={dateObj.date}
+                        column={dateObj.date}
+                        headingColor="text-neutral-500"
+                        cards={cards}
+                        setCards={setCards}
+                        isToday={dateObj.isToday}
+                    />
+                ))}
+            </div>
+        );
+    };
+
     return (
-        <div className="flex h-full w-full gap-3 p-12">
-            <ResizablePanelGroup direction="horizontal">
+        <div className="flex flex-col h-full w-full gap-3 px-12 py-4">
+            <div className="task__actions flex space-between border-b-2 p-2">
+                <div className="actions__left w-full"></div>
+                <div className="actions__right w-full flex justify-end">
+                    <Select
+                        value={calendarView}
+                        onValueChange={(value) => setCalendarView(value)}
+                        defaultValue="week"
+                    >
+                        <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Calendar" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectGroup>
+                                <SelectLabel>Calendar View</SelectLabel>
+                                <SelectItem
+                                    value="day"
+                                    onSelect={() => setCalendarView('day')}
+                                >
+                                    Day
+                                </SelectItem>
+                                <SelectItem
+                                    value="week"
+                                    onSelect={() => setCalendarView('week')}
+                                >
+                                    Week
+                                </SelectItem>
+                                <SelectItem
+                                    value="month"
+                                    onSelect={() => setCalendarView('month')}
+                                >
+                                    Month
+                                </SelectItem>
+                            </SelectGroup>
+                        </SelectContent>
+                    </Select>
+                    <Button className="max-w-32">Read Calendar</Button>
+                </div>
+            </div>
+            <ResizablePanelGroup
+                direction="horizontal"
+                className="flex flex-row"
+            >
                 <ResizablePanel
                     defaultSize={15}
                     minSize={15}
@@ -150,19 +300,9 @@ const Board = ({ dates }: BoardProps) => {
                 </ResizablePanel>
                 <ResizableHandle className="bg-transparent rounded-lg mr-4" />
                 <ResizablePanel>
-                    <div ref={boardRef} className="flex overflow-scroll h-full">
-                        {dates.map((dateObj) => (
-                            <Column
-                                key={dateObj.date}
-                                title={dateObj.date}
-                                column={dateObj.date}
-                                headingColor="text-neutral-500"
-                                cards={cards}
-                                setCards={setCards}
-                                isToday={dateObj.isToday}
-                            />
-                        ))}
-                    </div>
+                    {calendarView === 'day' && <DayView />}
+                    {calendarView === 'week' && <WeekView />}
+                    {calendarView === 'month' && <MonthView />}
                 </ResizablePanel>
                 <section id="burn-barrel" className="">
                     <BurnBarrel setCards={setCards} />
@@ -299,7 +439,7 @@ const Column = ({
     const filteredCards = cards.filter((c) => c.column === column);
 
     return (
-        <div className="w-56 shrink-0 m-4">
+        <div className={`w-56 shrink-0 m-4`}>
             <div className={`mb-3 flex items-center justify-between`}>
                 <h3 className={`font-medium ${headingColor} `}>
                     {title}{' '}
@@ -315,7 +455,7 @@ const Column = ({
                 onDrop={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                className={`h-full w-full transition-colors ${
+                className={`h-full transition-colors ${
                     active ? 'bg-neutral-800/50' : 'bg-neutral-800/0'
                 }`}
             >
@@ -458,7 +598,6 @@ const AddCard = ({ column, cards }: AddCardProps) => {
         };
 
         AddCardsToFirebase(newCard);
-
         setText('');
         setDescription('');
 

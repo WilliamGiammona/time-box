@@ -73,8 +73,7 @@ function Login() {
                                         signIn('credentials', {
                                             email,
                                             password,
-                                            callbackUrl:
-                                                'http://localhost:3000/calendar',
+                                            callbackUrl: '/calendar',
                                         });
                                         e.preventDefault();
                                     }}
@@ -94,7 +93,11 @@ function Login() {
                         <div className="flex items-center justify-center flex-col w-80 m-auto">
                             <Button
                                 className="w-[100%] my-1"
-                                onClick={() => signIn('google')}
+                                onClick={() =>
+                                    signIn('google', {
+                                        callbackUrl: '/calendar',
+                                    })
+                                }
                                 variant={'outline'}
                             >
                                 <Image
@@ -109,7 +112,11 @@ function Login() {
 
                             <Button
                                 className="w-[100%] my-1"
-                                onClick={() => signIn('github')}
+                                onClick={() =>
+                                    signIn('github', {
+                                        callbackUrl: '/calendar',
+                                    })
+                                }
                                 variant={'outline'}
                             >
                                 <Image
