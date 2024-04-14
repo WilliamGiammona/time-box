@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+
 import appMockupLight from '@/assets/Lightmode-mockup.png';
 import appMockupDark from '@/assets/Darkmode-mockup.png';
 import { toast } from 'sonner';
