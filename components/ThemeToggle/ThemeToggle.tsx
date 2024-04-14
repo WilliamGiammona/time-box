@@ -29,9 +29,9 @@ const ThemeToggle = () => {
                 className="relative w-20 h-8 flex items-center dark:bg-black-900 bg-white-300 cursor-pointer rounded-full p-1 mt-1 border"
                 onClick={() => setDarkMode(!darkMode)}
             >
-                <FaMoon className="text-slate-800" size={20} />
+                <FaMoon className="text-neutral-500" size={20} />
                 <div
-                    className="absolute bg-neutral-300 z-10 dark:bg-muted w-6 h-6 rounded-full shadow-md transform transition-transform duration-300"
+                    className="absolute bg-neutral-500 z-10 dark:bg-muted w-6 h-6 rounded-full shadow-md transform transition-transform duration-300"
                     style={darkMode ? { left: '2px' } : { right: '2px' }}
                 ></div>
                 <BsSunFill className={`ml-auto ${styles.sun}`} size={18} />

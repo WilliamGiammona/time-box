@@ -222,17 +222,17 @@ const Board = ({
     }, [session]);
     const boardRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        // Find the index of today's column
-        const todayIndex = dates.findIndex((dateObj) => dateObj.isToday);
-        if (todayIndex !== -1 && boardRef.current) {
-            // Calculate the scroll position based on the width of each column
-            const columnWidth = boardRef.current.children[0].clientWidth + 3; // Adding 3 for the gap
-            const scrollLeft = todayIndex * columnWidth;
-            // Set the scroll position
-            boardRef.current.scrollLeft = scrollLeft;
-        }
-    }, []);
+    // useEffect(() => {
+    //     // Find the index of today's column
+    //     const todayIndex = dates.findIndex((dateObj) => dateObj.isToday);
+    //     if (todayIndex !== -1 && boardRef.current) {
+    //         // Calculate the scroll position based on the width of each column
+    //         const columnWidth = boardRef.current.children[0].clientWidth + 3; // Adding 3 for the gap
+    //         const scrollLeft = todayIndex * columnWidth;
+    //         // Set the scroll position
+    //         boardRef.current.scrollLeft = scrollLeft;
+    //     }
+    // }, [dates]);
 
     const DayView = () => {
         return (
@@ -251,16 +251,13 @@ const Board = ({
                         <FaAngleRight />
                     </button>
                 </div>
-                <div
-                    ref={boardRef}
-                    className="flex overflow-scroll h-full w-full"
-                >
-                    <div className="sticky left-0 mr-10 ">
+                <div className="flex overflow-scroll h-full w-full">
+                    <div className="sticky left-0 mr-18">
                         {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
                             <div className="relative h-28" key={hour}>
-                                <div className="absolute inset-0 flex items-center ">
+                                <div className="absolute inset-0 flex items-center w-full">
                                     <div
-                                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
+                                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 text-sm font-medium text-neutral-500 w-full`}
                                     >
                                         {hour}:00
                                     </div>
@@ -279,6 +276,7 @@ const Board = ({
                                 cards={cards}
                                 setCards={setCards}
                                 isToday={dateObj.isToday}
+                                boardRef={boardRef}
                             />
                         ))}
                 </div>
@@ -286,134 +284,9 @@ const Board = ({
         );
     };
 
-    const HourSection = ({
-        hour,
-        cards,
-        handleDragOver,
-        handleDragEnd,
-        handleDragStart,
-        activeHour,
-        indicators,
-    }) => {
-        const filteredCards = cards.filter((c) => c.hour === hour);
-
-        return (
-            <div
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDragEnd(e)}
-                className={`hour-section relative h-28 ${
-                    activeHour == hour &&
-                    `bg-violet-400/20 border border-violet-400 rounded-lg`
-                }`}
-            >
-                <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
-                    <div
-                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
-                    ></div>
-                </div>
-                <div className="">
-                    {filteredCards.map((card) => (
-                        <Card
-                            key={card.id}
-                            handleDragStart={handleDragStart}
-                            {...card}
-                            indicators={indicators}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    };
-
-    type HourColumnProps = {
-        title: string;
-        column: ColumnType;
-        headingColor: string;
-        cards: CardType[];
-        setCards: Dispatch<SetStateAction<CardType[]>>;
-        isToday: boolean;
-    };
-
-    const HourColumn = ({
-        title,
-        column,
-        headingColor,
-        cards,
-        setCards,
-        isToday,
-    }: HourColumnProps) => {
-        const [activeHour, setActiveHour] = useState<number | null>(null);
-        const [indicators, showIndicators] = useState(false);
-
-        const handleDragStart = (e: DragEvent, card: CardType) => {
-            e.dataTransfer.setData('cardId', card.id);
-            e.dataTransfer.setData('docId', card.docId);
-            showIndicators(true);
-        };
-
-        const handleDragOver = (e: DragEvent, hour: number) => {
-            e.preventDefault();
-            setActiveHour(hour);
-        };
-
-        const handleDragEnd = async (e: DragEvent, targetHour: number) => {
-            e.preventDefault();
-            const cardId = e.dataTransfer.getData('cardId');
-            const docId = e.dataTransfer.getData('docId');
-            setActiveHour(null);
-            showIndicators(false);
-
-            const card = cards.find((c) => c.id === cardId);
-            if (!card) return;
-
-            const updatedCards = cards.map((c) => {
-                if (c.id === cardId) {
-                    return { ...c, column, hour: targetHour };
-                }
-                return c;
-            });
-
-            setCards(updatedCards);
-
-            // Update card in Firebase Firestore
-            const docRef = doc(db, 'tasks', docId);
-            await updateDoc(docRef, { column, hour: targetHour });
-        };
-
-        return (
-            <div
-                className={`${calendarView === 'week' || calendarView === 'month' ? `w-56` : `w-[68vw]`} shrink-0 m-4 relative h-full`}
-            >
-                <div
-                    className={`mb-3 flex items-center justify-between sticky top-0`}
-                >
-                    <h3 className={`font-medium ${headingColor} `}>
-                        {title}{' '}
-                        {isToday ? (
-                            <span className="text-blue-500">Today</span>
-                        ) : null}
-                    </h3>
-                    <span className="self-end rounded text-sm text-neutral-400">
-                        {cards.filter((c) => c.column === column).length}
-                    </span>
-                </div>
-                {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
-                    <HourSection
-                        key={hour}
-                        hour={hour}
-                        cards={cards.filter((c) => c.column === column)}
-                        handleDragOver={(e) => handleDragOver(e, hour)}
-                        handleDragEnd={(e) => handleDragEnd(e, hour)}
-                        handleDragStart={handleDragStart}
-                        activeHour={activeHour}
-                        indicators={indicators}
-                    />
-                ))}
-            </div>
-        );
-    };
-
     const WeekView = () => {
+        const boardRef = useRef<HTMLDivElement>(null);
+
         return (
             <div className="flex flex-col overflow-scroll h-full">
                 <div className="date__changer flex gap-x-4">
@@ -430,7 +303,7 @@ const Board = ({
                         <FaAngleRight />
                     </button>
                 </div>
-                <div ref={boardRef} className="flex overflow-scroll h-full">
+                <div className="flex overflow-scroll h-full" ref={boardRef}>
                     <>
                         {/* <div className="relative">
                     {hoursArray.map((hour) => (
@@ -466,6 +339,7 @@ const Board = ({
                                     cards={cards}
                                     setCards={setCards}
                                     isToday={dateObj.isToday}
+                                    boardRef={boardRef}
                                 />
                             ))}
                     </>
@@ -491,10 +365,7 @@ const Board = ({
                         <FaAngleRight />
                     </button>
                 </div>
-                <div
-                    ref={boardRef}
-                    className="flex flex-wrap justify-center overflow-scroll h-full"
-                >
+                <div className="flex flex-wrap justify-center overflow-scroll h-full">
                     {dates.map((dateObj) => (
                         <Column
                             key={dateObj.date}
@@ -509,6 +380,146 @@ const Board = ({
                     ))}
                 </div>
             </>
+        );
+    };
+
+    const HourSection = ({
+        hour,
+        cards,
+        handleDragOver,
+        handleDragEnd,
+        handleDragStart,
+        activeHour,
+        indicators,
+    }) => {
+        const filteredCards = cards.filter((c) => c.hour === hour);
+
+        return (
+            <div
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDragEnd(e)}
+                className={`hour-section relative h-28  ${
+                    activeHour == hour &&
+                    `bg-violet-400/20 border border-violet-400 rounded-lg`
+                }`}
+            >
+                <div className="absolute inset-0 flex items-center border-b border-neutral-300 dark:border-neutral-700">
+                    <div
+                        className={`z-10 bg-neutral-100 dark:bg-neutral-800 px-2 text-sm font-medium text-neutral-500`}
+                    ></div>
+                </div>
+                <div className="">
+                    {filteredCards.map((card) => (
+                        <Card
+                            key={card.id}
+                            handleDragStart={handleDragStart}
+                            {...card}
+                            indicators={indicators}
+                        />
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    type HourColumnProps = {
+        title: string;
+        column: ColumnType;
+        headingColor: string;
+        cards: CardType[];
+        setCards: Dispatch<SetStateAction<CardType[]>>;
+        isToday: boolean;
+        boardRef: React.RefObject<HTMLDivElement>;
+    };
+
+    const HourColumn = ({
+        title,
+        column,
+        headingColor,
+        cards,
+        setCards,
+        isToday,
+        boardRef,
+    }: HourColumnProps) => {
+        const [activeHour, setActiveHour] = useState<number | null>(null);
+        const [indicators, showIndicators] = useState(false);
+        const [storeScrollLeft, setScrollLeft] = useState<number>(0);
+        const [storeScrollTop, setScrollTop] = useState<number>(0);
+
+        const handleDragStart = (e: DragEvent, card: CardType) => {
+            e.dataTransfer.setData('cardId', card.id);
+            e.dataTransfer.setData('docId', card.docId);
+            showIndicators(true);
+        };
+
+        const handleDragOver = (e: DragEvent, hour: number) => {
+            e.preventDefault();
+            setActiveHour(hour);
+        };
+
+        const handleDragEnd = async (e: DragEvent, targetHour: number) => {
+            e.preventDefault();
+            const boardEl = boardRef.current;
+            if (!boardEl) return;
+            setScrollLeft(boardEl.scrollLeft);
+            setScrollTop(boardEl.scrollTop);
+
+            const cardId = e.dataTransfer.getData('cardId');
+            const docId = e.dataTransfer.getData('docId');
+            setActiveHour(null);
+            showIndicators(false);
+
+            const card = cards.find((c) => c.id === cardId);
+            if (!card) return;
+
+            const updatedCards = cards.map((c) => {
+                if (c.id === cardId) {
+                    return { ...c, column, hour: targetHour };
+                }
+                return c;
+            });
+
+            setCards(updatedCards);
+
+            // Update card in Firebase Firestore
+            const docRef = doc(db, 'tasks', docId);
+            await updateDoc(docRef, { column, hour: targetHour });
+            boardEl.scrollLeft = storeScrollLeft;
+            console.log(storeScrollLeft);
+            boardEl.scrollTop = storeScrollTop;
+            console.log(storeScrollTop);
+        };
+
+        return (
+            <div
+                className={`${calendarView === 'week' || calendarView === 'month' ? `w-56` : `w-[68vw]`} shrink-0 m-4 relative h-full`}
+            >
+                <div
+                    className={`mb-3 flex items-center justify-between sticky top-0`}
+                >
+                    <h3 className={`font-medium ${headingColor} `}>
+                        {title}{' '}
+                        {isToday ? (
+                            <span className="text-blue-500">Today</span>
+                        ) : null}
+                    </h3>
+                    <span className="self-end rounded text-sm text-neutral-400">
+                        {cards.filter((c) => c.column === column).length}
+                    </span>
+                </div>
+                {Array.from({ length: 24 }, (_, i) => i).map((hour) => (
+                    <HourSection
+                        key={hour}
+                        hour={hour}
+                        cards={cards.filter((c) => c.column === column)}
+                        handleDragOver={(e) => handleDragOver(e, hour)}
+                        handleDragEnd={(e) => handleDragEnd(e, hour)}
+                        handleDragStart={handleDragStart}
+                        activeHour={activeHour}
+                        indicators={indicators}
+                    />
+                ))}
+            </div>
         );
     };
 
@@ -602,6 +613,7 @@ type ColumnProps = {
     column: ColumnType;
     setCards: Dispatch<SetStateAction<CardType[]>>;
     calendarView: string;
+    boardRef: React.RefObject<HTMLDivElement>;
 };
 
 const Column = ({
@@ -632,6 +644,7 @@ const Column = ({
         const before = element.dataset.before || '-1';
 
         if (before !== cardId) {
+            // Save the current scroll position
             let copy = [...cards];
 
             let cardToTransfer = copy.find((c) => c.id === cardId);
