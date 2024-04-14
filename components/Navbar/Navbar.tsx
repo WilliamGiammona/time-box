@@ -28,7 +28,7 @@ export default function Navbar() {
                             className="dark:invert rounded-lg"
                         ></Image>
                         <h1 className="font-bold poppins dark:text-neutral-50 text-neutral-800 ml-4">
-                            Evo<span className="text-slate-500">Cal</span>
+                            Evo<span className="text-neutral-500">Cal</span>
                         </h1>
                     </Link>
                 </div>
