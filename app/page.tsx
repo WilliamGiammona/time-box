@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Avatar } from '@/components/ui/avatar';
-
 export default function Home() {
     const router = useRouter();
     const session = useSession();
@@ -113,7 +112,7 @@ export default function Home() {
                                         Lawson{' '}
                                     </h2>
                                     <p className="text-sm dark:text-neutral-300 text-neutral-800">
-                                        Muscisian
+                                        Musician
                                     </p>
                                 </div>
                             </div>
