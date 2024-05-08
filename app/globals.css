@@ -43,7 +43,7 @@
 
     /* For WebKit (Chrome, Safari, etc.) */
     ::-webkit-scrollbar {
-        width: 10px;
+        width: 4px;
     }
 
     /* Hide scrollbar colour */
@@ -119,10 +119,203 @@
     }
 }
 
+.fc-event {
+    max-width: 200px;
+}
+
+.fc-next-button.fc-button-primary,
+.fc-prev-button.fc-button-primary {
+    @apply dark:bg-neutral-800;
+    @apply bg-neutral-200;
+    @apply text-neutral-800;
+    @apply hover:dark:bg-neutral-700;
+    @apply hover:bg-neutral-300;
+
+    @apply dark:text-neutral-100;
+    @apply rounded-full !important;
+    @apply mx-2;
+    @apply h-10;
+    @apply flex;
+    @apply justify-center;
+    @apply items-center;
+    @apply w-10;
+    @apply border-none;
+}
+
+.fc-direction-ltr
+    .fc-button-group
+    > .fc-button:not(:first-child)
+    .fc--button
+    .fc-button
+    .fc-button-primary {
+    @apply hidden;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    @apply bg-neutral-400;
+    @apply text-neutral-800;
+    @apply dark:text-neutral-50;
+}
+
+.fc-next-button.fc-button-primary:hover,
+.fc-prev-button.fc-button-primary:hover {
+    @apply dark:bg-neutral-800/80;
+
+    @apply rounded-full !important;
+    @apply mx-2;
+    @apply flex;
+    @apply justify-center;
+    @apply items-center;
+    @apply h-10;
+    @apply w-10;
+    @apply border-none;
+}
+
+.fc-theme-standard .fc-scrollgrid {
+    @apply border-none;
+}
+
+tbody {
+    @apply shadow-neutral-800;
+}
+
+.fc-h-event,
+.fc-timegrid-event-harness-inset .fc-timegrid-event {
+    @apply shadow-none !important;
+    @apply shadow-purple-400 !important;
+    @apply border-purple-400 !important;
+    @apply border-2;
+    @apply p-1;
+}
+.fc-h-event,
+.fc-v-event {
+    @apply dark:bg-purple-400/30 !important;
+    @apply bg-purple-400/50;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+    @apply dark:bg-neutral-800;
+    @apply bg-neutral-200;
+}
+
+.fc-v-event .fc-event-title,
+.fc-v-event .fc-event-time {
+    @apply text-neutral-800 !important;
+    @apply dark:text-neutral-50 !important;
+}
+
+.fc-daygrid-block-event .fc-event-title {
+    @apply text-neutral-800;
+    @apply dark:text-neutral-50;
+}
+
+.fc-v-event .fc-event-title {
+    @apply font-semibold !important;
+}
+
+.fc .fc-toolbar-title {
+    @apply font-bold;
+    @apply text-lg;
+    @apply text-neutral-800;
+    @apply dark:text-neutral-100;
+}
+
+.fc-daygrid-day-number {
+    @apply dark:text-neutral-400;
+    @apply dark:bg-neutral-700;
+    @apply rounded-full;
+    @apply h-8;
+    @apply w-8;
+    @apply text-center;
+    @apply m-1;
+}
+
+.fc-toolbar-chunk .fc-button-group .fc-timeGridDay-button,
+.fc-toolbar-chunk .fc-button-group .fc-dayGridMonth-button,
+.fc-toolbar-chunk .fc-button-group .fc-timeGridWeek-button,
+.fc-today-button {
+    @apply dark:bg-neutral-800 !important;
+    @apply dark:text-neutral-50 !important;
+    @apply bg-neutral-200 !important;
+    @apply text-neutral-800 !important;
+    @apply border-none !important;
+    @apply mx-2;
+    @apply rounded-lg !important;
+}
+
+.fc-today-button .fc-button .fc-button-primary {
+    @apply bg-neutral-50 !important;
+    @apply dark:bg-neutral-900 !important;
+    @apply border-neutral-50 !important;
+    @apply text-sm !important;
+}
+
+.fc-col-header-cell-cushion {
+    @apply text-neutral-400;
+    @apply font-medium !important;
+    @apply text-sm;
+    @apply w-full;
+    @apply py-4 !important;
+    @apply px-2;
+}
+
+.fc-scrollgrid-section-liquid {
+    height: 1px !important;
+}
+
+.fc .fc-timegrid-slot-label-cushion {
+    @apply text-neutral-600 !important;
+    @apply text-sm;
+}
+
+.fc-theme-standard td,
+.fc-theme-standard th {
+    @apply border-neutral-700;
+}
+
+.fc-theme-standard th {
+    border-style: none !important;
+}
+
+.fc-col-header-cell .fc-scrollgrid-sync-inner {
+    @apply dark:bg-neutral-800;
+    @apply bg-neutral-100;
+    @apply w-full;
+}
+
+.fc .fc-timegrid-axis-cushion {
+    @apply p-2;
+    @apply text-center;
+    @apply dark:text-neutral-500;
+    @apply text-neutral-800;
+}
+
+.fc-button-primary:disabled .fc-today-button {
+    @apply bg-neutral-800/80;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active:focus,
+.fc .fc-button-primary:not(:disabled):active:focus {
+    box-shadow: rgba(34, 36, 37, 0.066) 0px 0px 0px 0.2rem !important;
+}
+
 @layer base {
     * {
         @apply border-border;
     }
+
+    :root {
+        /* ... */
+        --fc-today-bg-color: none /* or your desired value */;
+    }
+
+    .dark {
+        /* ... */
+        --fc-today-bg-color: none;
+        /* or your desired value */
+    }
+
     body {
         @apply bg-background text-foreground;
     }

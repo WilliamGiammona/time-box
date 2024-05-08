@@ -41,7 +41,6 @@ export const {
                     })
                     .catch((error) => {
                         console.log(error);
-                        throw error; // Throw the original error
                     });
             },
         }),

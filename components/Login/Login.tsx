@@ -20,8 +20,23 @@ import SignUp from '../Signup/Signup';
 function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [error, setError] = useState(null);
+    const router = useRouter();
+
+    const handleLogin = async (credentials) => {
+        const result = await signIn('credentials', {
+            ...credentials,
+            redirect: false,
+            callbackUrl: '/calendar',
+        });
+
+        if (result?.error) {
+            setError(result?.error);
+        } else {
+            router.push('/calendar');
+        }
+    };
 
     return (
         <>
@@ -34,7 +49,7 @@ function Login() {
                 <DialogContent className="lg">
                     <DialogHeader>
                         <h1 className="text-2xl font-bold">
-                            Sign in to Timebox
+                            Sign in to EvoCal
                         </h1>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -68,14 +83,19 @@ function Login() {
                                     required
                                 />
 
+                                {error && (
+                                    <div className="text-red-500 text-sm text-center mb-3">
+                                        Error: {error}
+                                    </div>
+                                )}
+
                                 <Button
                                     type="submit"
-                                    className="w-full m-3"
+                                    className="w-full m-3 bg-neutral-900"
                                     onClick={(e) => {
-                                        signIn('credentials', {
+                                        handleLogin({
                                             email,
                                             password,
-                                            callbackUrl: '/calendar',
                                         });
                                         e.preventDefault();
                                     }}
