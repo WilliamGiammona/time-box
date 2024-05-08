@@ -7,6 +7,7 @@ import SessionProvider from './SessionProvider';
 import Navbar from '@/components/Navbar/Navbar';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
+import React from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({

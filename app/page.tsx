@@ -18,7 +18,7 @@ import monthImg from '@/assets/month-view.png';
 import monthImgLight from '@/assets/month-view-light.png';
 import { HiCursorClick } from 'react-icons/hi';
 
-import { FaCalendarWeek } from 'react-icons/fa';
+import { FaCalendarWeek, FaFire } from 'react-icons/fa';
 
 export default function Home() {
     const router = useRouter();
@@ -27,8 +27,8 @@ export default function Home() {
     return (
         <>
             <header>
-                <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center h-full items-center justify-start pt-10 mb-4">
-                    <h1 className="animate-fade-in-bottom bg-gradient-to-r from-violet-600 to-violet-400 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center h-full items-center justify-start pt-20 mb-4">
+                    <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                         Get things done.
                     </h1>
                     <h2 className="mb-4 poppins animate-fade-in-bottom">
@@ -36,7 +36,7 @@ export default function Home() {
                         and simple app.
                     </h2>
                     <Button
-                        className="poppins mb-10 bg-gradient-to-r from-violet-600 to-violet-400 dark:hover:from-neutral-900 hover:from-neutral-100 hover:text-neutral-900 dark:hover:text-neutral-50 transition duration-300 hover:to-neutral-100 dark:hover:to-transparent py-6 px-4 text-md border"
+                        className="flex transition-all duration-100 poppins mb-10 bg-gradient-to-r from-purple-600 to-purple-500 dark:hover:from-neutral-900  hover:from-neutral-100 hover:text-neutral-900 dark:hover:text-neutral-50 hover:to-neutral-100 dark:hover:to-black py-6 px-4 text-md border group"
                         onClick={() => {
                             router.push('/calendar');
                             if (!session.data?.user) {
@@ -54,7 +54,13 @@ export default function Home() {
                             }
                         }}
                     >
-                        Try EvoCal - It&apos;s Free
+                        Try EvoCal{' '}
+                        <span className="text-[0.6em] p-[0.1em] mx-1 border border-neutral-50 rounded-sm ">
+                            {' '}
+                            BETA
+                        </span>{' '}
+                        - It&apos;s Free
+                        <FaFire className="opacity-0 w-0 group-hover:opacity-100 group-hover:w-full transition-all duration-300 animate-fade-in-bottom fill-red-500" />
                     </Button>
                 </div>
                 <div className="relative animate-fade-in-bottom left-0 w-full lg:h-[60vh] md:h-[40vh]">
@@ -78,7 +84,7 @@ export default function Home() {
                 </div>
                 <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center items-center justify-center my-10">
                     <section id="bento">
-                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-600 to-purple-400 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                             Build your day
                         </h1>
 
@@ -130,10 +136,23 @@ export default function Home() {
                                                 <div className="mt-6 text-center relative z-10 space-y-2">
                                                     <h2 className="text-lg font-medium text-gray-800 transition group-hover:text-purple-950 dark:text-white">
                                                         Secure by default
+                                                        <span className="font-thin text-md">
+                                                            *
+                                                        </span>
                                                     </h2>
                                                     <p className="dark:text-gray-300 text-gray-700">
                                                         Made with Firebase
                                                     </p>
+                                                    <Link
+                                                        href="https://firebase.google.com/support/privacy#:~:text=Firebase%20services%20encrypt%20data%20in,Cloud%20Firestore"
+                                                        className="text-xs hover:text-violet-300"
+                                                    >
+                                                        *Firebase services
+                                                        encrypt data in transit
+                                                        using HTTPS and
+                                                        logically isolate
+                                                        customer data.&quot;
+                                                    </Link>
                                                 </div>
                                             </div>
                                         </div>
@@ -254,7 +273,7 @@ export default function Home() {
                         id="testimonials"
                         className="flex flex-col items-center justify-center"
                     >
-                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-600 to-purple-400 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                             Made for power users
                         </h1>
 

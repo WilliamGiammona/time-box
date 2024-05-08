@@ -23,13 +23,17 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import ModeToggle from '../ModeToggle/ModeToggle';
+import { usePathname } from 'next/navigation';
 
 export default function Navbar() {
     const session = useSession();
+    const pathName = usePathname();
 
     return (
         <>
-            <nav className={styles.navbar}>
+            <nav
+                className={`${styles.navbar} fixed left-1/2 translate-x-[-50%] top-0 rounded-3xl ${pathName == '/' ? 'dark:bg-black/30 bg-neutral-200/30' : 'dark:bg-neutral-900'} px-6 py-2 my-4 z-40 backdrop-blur-md`}
+            >
                 <div className="nav__log">
                     <Link href="/" className="flex items-center">
                         <Image
@@ -37,7 +41,7 @@ export default function Navbar() {
                             width={50}
                             height={50}
                             alt="Timebox logo"
-                            className="dark:invert rounded-lg"
+                            className="dark:invert rounded-3xl"
                         ></Image>
                         <h1 className="font-bold poppins dark:text-neutral-50 text-neutral-800 ml-4">
                             Evo<span className="text-neutral-500">Cal</span>
@@ -63,7 +67,7 @@ export default function Navbar() {
                     <div>
                         {session?.data?.user && (
                             <>
-                                <div className="flex items-center justify-center">
+                                <div className=" flex items-center justify-center">
                                     <DropdownMenu>
                                         <DropdownMenuTrigger>
                                             <Avatar className="mx-3">

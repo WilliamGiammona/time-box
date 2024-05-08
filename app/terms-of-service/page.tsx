@@ -2,9 +2,12 @@ import React from 'react';
 
 function TermsOfService() {
     return (
-        <div className="my-10 mx-auto max-w-[600px]">
-            <h1 className="text-lg font-bold mt-8">Introduction</h1>
-            <hr />
+        <div className="py-10 my-10 mx-auto max-w-[800px]">
+            <h1 className="text-4xl font-bold mt-8 py-4 bg-gradient-to-r from-purple-500 to-purple-300 text-transparent bg-clip-text">
+                Terms of Service
+            </h1>
+            <h1 className="text-lg font-bold mt-4">Introduction</h1>
+            <hr className="my-1" />
             <p className="text-sm">
                 Welcome to EvoCal! These Terms of Service (“Terms”) outline the
                 rules and guidelines for using our calendar application. By
@@ -13,7 +16,7 @@ function TermsOfService() {
                 from using our service.
             </p>{' '}
             <h1 className="text-lg font-bold mt-8">User Responsibilities</h1>
-            <hr />
+            <hr className="my-1" />
             <ol className="list-decimal text-sm">
                 <li>
                     <span className="font-bold">Legitimate Use:</span> EvoCal is
@@ -35,7 +38,7 @@ function TermsOfService() {
             <h1 className="text-lg font-bold mt-8">
                 Account Creation and Authentication
             </h1>
-            <hr />
+            <hr className="my-1" />
             <ol className="text-sm list-decimal">
                 <li>
                     <span className="font-bold">Login Options:</span> <br />
@@ -84,7 +87,7 @@ function TermsOfService() {
                 </li>
             </ol>
             <h1 className="text-lg font-bold mt-8"> Task and Event Storage </h1>
-            <hr />
+            <hr className="my-1" />
             <ol className="list-decimal text-sm">
                 <li>
                     <span className="font-bold">Firestore Database:</span>{' '}
@@ -102,7 +105,7 @@ function TermsOfService() {
                 </ul>
             </ol>
             <h1 className="text-lg font-bold mt-8"> Privacy and Data Usage</h1>
-            <hr />
+            <hr className="my-1" />
             <ol className="list-decimal text-sm">
                 <li>
                     <span className="font-bold">Privacy Policy:</span>
@@ -119,7 +122,7 @@ function TermsOfService() {
                 </ul>
             </ol>
             <h1 className="text-lg font-bold mt-8"> Changes to Terms </h1>
-            <hr />
+            <hr className="my-1" />
             <ol className="list-decimal text-sm">
                 <li>
                     <span className="font-bold">Updates:</span>

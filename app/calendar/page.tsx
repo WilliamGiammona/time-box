@@ -35,7 +35,7 @@ export default async function NewCalendar() {
 
     return (
         <>
-            <div className="calendar__wrapper flex flex-col dark:bg-neutral-900 bg-neutral-50">
+            <div className="calendar__wrapper flex flex-col dark:bg-neutral-900 bg-neutral-50 pt-[5.9rem] h-full">
                 <div className="flex">
                     <Calendar braindump={braindump} tasks={tasks} />
                 </div>

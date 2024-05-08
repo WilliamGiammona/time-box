@@ -109,7 +109,7 @@ const config = {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
                 'fade-in-bottom': 'fade-in-bottom 0.6s ease-out',
-                'spin-decelerate': 'spin-decelerate 1.5s infinite',
+                'spin-decelerate': 'spin-decelerate 2s infinite',
             },
         },
     },
