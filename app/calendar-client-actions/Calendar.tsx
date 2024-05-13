@@ -232,7 +232,7 @@ function Calendar({ braindump, tasks }) {
                                 <div className="flex flex-col w-full items-center justify-center">
                                     {optimisticBraindump.map((task) => (
                                         <motion.div
-                                            className="fc-event dark:bg-neutral-900/80 border-2 p-2 my-2 w-full rounded-md text-center text-sm relative hover:cursor-pointer"
+                                            className={`hover:cursor-pointer relative h-full text-center fc-event w-full my-2 py-2 text-sm dark:bg-neutral-900/80 border border-neutral-300 dark:border-neutral-800 rounded-lg`}
                                             title={task.title}
                                             key={task.id}
                                             id="draggable-el"
@@ -357,7 +357,7 @@ function Calendar({ braindump, tasks }) {
                             </div>
                             <FullCalendar
                                 ref={calendarRef}
-                                height={682}
+                                height={'100%'}
                                 plugins={[
                                     dayGridPlugin,
                                     interactionPlugin,
@@ -465,7 +465,7 @@ function Calendar({ braindump, tasks }) {
                                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                                 >
-                                    <Dialog.Panel className="relative transform overflow-hidden rounded-lg  text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg bg-neutral-900">
+                                    <Dialog.Panel className="relative transform overflow-hidden rounded-lg  text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg dark:bg-neutral-900 bg-neutral-100">
                                         <div className=" px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                                             <div className="sm:flex sm:items-start">
                                                 <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
@@ -477,7 +477,7 @@ function Calendar({ braindump, tasks }) {
                                                 <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
                                                     <Dialog.Title
                                                         as="h3"
-                                                        className="text-base font-semibold leading-6text-neutral-900"
+                                                        className="text-base font-semibold leading-6 text-neutral-900 dark:text-neutral-100"
                                                     >
                                                         Delete Event
                                                     </Dialog.Title>
@@ -492,11 +492,11 @@ function Calendar({ braindump, tasks }) {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="bg-neutral-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                                        <div className="dark:bg-neutral-800 bg-neutral-200 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                                             <button
                                                 type="button"
-                                                className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm 
-                      font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                                                className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm 
+                      font-semibold text-white shadow-sm hover:bg-red-400 sm:ml-3 sm:w-auto"
                                                 onClick={handleDeleteTask}
                                             >
                                                 Delete
@@ -504,8 +504,8 @@ function Calendar({ braindump, tasks }) {
 
                                             <button
                                                 type="button"
-                                                className="mt-3 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-neutral-100 
-                      shadow-sm ring-1 ring-inset dark:ring-neutral-600 hover:bg-neutral-700 sm:mt-0 sm:w-auto"
+                                                className="mt-3 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold dark:text-neutral-100 text-neutral-800
+                      shadow-sm ring-1 ring-inset dark:ring-neutral-600 ring-neutral-400 dark:hover:bg-neutral-700 hover:bg-neutral-300 sm:mt-0 sm:w-auto"
                                                 onClick={() =>
                                                     setDeleteModal(false)
                                                 }

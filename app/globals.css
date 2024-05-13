@@ -43,7 +43,7 @@
 
     /* For WebKit (Chrome, Safari, etc.) */
     ::-webkit-scrollbar {
-        width: 4px;
+        width: 8px;
     }
 
     /* Hide scrollbar colour */

@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
-import appMockupLight from '@/assets/Lightmode-mockup.png';
-import appMockupDark from '@/assets/Darkmode-mockup.png';
+import appMockupLight from '@/assets/Mockup-2.webp';
+import appMockupDark from '@/assets/Mockup-1.webp';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { AvatarFallback } from '@radix-ui/react-avatar';
@@ -19,51 +19,85 @@ import monthImgLight from '@/assets/month-view-light.png';
 import { HiCursorClick } from 'react-icons/hi';
 
 import { FaCalendarWeek, FaFire } from 'react-icons/fa';
+import { motion } from 'framer-motion';
+import { useInView } from 'framer-motion';
+import { useRef } from 'react';
 
 export default function Home() {
     const router = useRouter();
     const session = useSession();
 
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: false, amount: 0.5 });
+
     return (
         <>
             <header>
-                <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center h-full items-center justify-start pt-20 mb-4">
-                    <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                <div className="flex max-w-[1200px] w-[100%] mx-auto flex-col text-center h-full items-center justify-start pt-20 mb-4">
+                    <motion.h1 className=" bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                         Get things done.
-                    </h1>
-                    <h2 className="mb-4 poppins animate-fade-in-bottom">
-                        Organise your thoughts and plan your day in a beautiful
-                        and simple app.
-                    </h2>
-                    <Button
-                        className="flex transition-all duration-100 poppins mb-10 bg-gradient-to-r from-purple-600 to-purple-500 dark:hover:from-neutral-900  hover:from-neutral-100 hover:text-neutral-900 dark:hover:text-neutral-50 hover:to-neutral-100 dark:hover:to-black py-6 px-4 text-md border group"
-                        onClick={() => {
-                            router.push('/calendar');
-                            if (!session.data?.user) {
-                                toast('❌ Cannot access page', {
-                                    description:
-                                        'Sign in to access the calendar page',
-                                    action: {
-                                        label: 'Ok',
-                                        onClick: () =>
-                                            console.log(
-                                                'Sign in to access the calendar page'
-                                            ),
-                                    },
-                                });
-                            }
+                    </motion.h1>
+                    <motion.h2
+                        className="mb-4 poppins "
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            duration: 0.8,
+                            delay: 0.4,
+                            ease: [0, 0.71, 0.2, 1.01],
                         }}
                     >
-                        Try EvoCal{' '}
-                        <span className="text-[0.6em] p-[0.1em] mx-1 border border-neutral-50 rounded-sm ">
-                            {' '}
-                            BETA
-                        </span>{' '}
-                        - It&apos;s Free
-                        <FaFire className="opacity-0 w-0 group-hover:opacity-100 group-hover:w-full transition-all duration-300 animate-fade-in-bottom fill-red-500" />
-                    </Button>
+                        Organise your thoughts and plan your day in a beautiful
+                        and simple app.
+                    </motion.h2>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                            duration: 0.8,
+                            delay: 0.5,
+                            ease: [0, 0.71, 0.2, 1.01],
+                        }}
+                    >
+                        <Button
+                            className="flex transition-all duration-100 poppins mb-10 bg-gradient-to-r from-purple-600 to-purple-500 dark:hover:from-neutral-900  hover:from-neutral-100 hover:text-neutral-900 dark:hover:text-neutral-50 hover:to-neutral-100 dark:hover:to-black py-6 px-4 text-md border group"
+                            onClick={() => {
+                                router.push('/calendar');
+                                if (!session.data?.user) {
+                                    toast('❌ Cannot access page', {
+                                        description:
+                                            'Sign in to access the calendar page',
+                                        action: {
+                                            label: 'Ok',
+                                            onClick: () =>
+                                                console.log(
+                                                    'Sign in to access the calendar page'
+                                                ),
+                                        },
+                                    });
+                                }
+                            }}
+                        >
+                            Try EvoCal{' '}
+                            <span className="text-[0.6em] p-[0.1em] mx-1 border border-neutral-50 rounded-sm ">
+                                {' '}
+                                BETA
+                            </span>{' '}
+                            - It&apos;s Free
+                            <FaFire className="opacity-0 w-0 group-hover:opacity-100 group-hover:w-full transition-all duration-300 fill-red-500" />
+                        </Button>
+                    </motion.div>
                 </div>
-                <div className="relative animate-fade-in-bottom left-0 w-full lg:h-[60vh] md:h-[40vh]">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                        duration: 0.8,
+                        delay: 0.6,
+                        ease: [0, 0.71, 0.2, 1.01],
+                    }}
+                    className="relative left-0 w-full lg:h-[60vh] md:h-[40vh]"
+                >
                     <Image
                         src={appMockupLight}
                         className="absolute object-contain block dark:hidden left-0 top-0 w-full rounded-lg z-10 max-h-[60vh]"
@@ -78,13 +112,13 @@ export default function Home() {
                         width={2000}
                         height={1200}
                     />
-                </div>
-                <div className="absolute translate-y-[-100px] z-[-1]">
-                    <div className="gradient relative w-full h-[500px] translate-x-[-100px] bg-gradient-to-t dark:from-background backdrop-blur-3xl dark:via-neutral-900 blur-3xl dark:to-background opacity-100 left-[0] z-[-10] from-neutral-300 via-neutral-300 to-neutral-100" />
-                </div>
-                <div className="flex max-w-[1200px] w-[100%] mx-auto flex flex-col text-center items-center justify-center my-10">
-                    <section id="bento">
-                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                </motion.div>
+                <motion.div className="absolute translate-y-[-100px] z-[-1] w-full">
+                    <div className="gradient relative w-full h-[500px] translate-x-[-100px] bg-gradient-to-t dark:from-background backdrop-blur-3xl dark:via-neutral-900 blur-3xl dark:to-background opacity-100 left-[0] z-[-10] from-neutral-300 via-neutral-200 to-neutral-100" />
+                </motion.div>
+                <div className="flex max-w-[1200px] w-[100%] mx-auto flex-col text-center items-center justify-center my-10">
+                    <section id="bento" ref={ref}>
+                        <h1 className=" bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                             Build your day
                         </h1>
 
@@ -92,7 +126,20 @@ export default function Home() {
                             <div className="mx-auto px-6 max-w-6xl text-neutral-500">
                                 <div className="relative">
                                     <div className="relative z-10 grid gap-3 grid-cols-6">
-                                        <div className="col-span-full lg:col-span-2 overflow-hidden flex relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900">
+                                        <motion.div
+                                            initial={{ x: '-10vw', opacity: 0 }}
+                                            animate={
+                                                isInView
+                                                    ? { x: 0, opacity: 1 }
+                                                    : {}
+                                            }
+                                            transition={{
+                                                duration: 0.6,
+                                                ease: 'easeInOut',
+                                                delay: 0,
+                                            }}
+                                            className="col-span-full lg:col-span-2 overflow-hidden flex relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900"
+                                        >
                                             <div className="size-fit m-auto relative">
                                                 <div className="relative h-24 w-full flex items-center">
                                                     <svg
@@ -114,8 +161,21 @@ export default function Home() {
                                                     Free to use
                                                 </h2>
                                             </div>
-                                        </div>
-                                        <div className="col-span-full sm:col-span-3 lg:col-span-2 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900">
+                                        </motion.div>
+                                        <motion.div
+                                            initial={{ y: '-10vw', opacity: 0 }}
+                                            animate={
+                                                isInView
+                                                    ? { y: 0, opacity: 1 }
+                                                    : {}
+                                            }
+                                            transition={{
+                                                duration: 0.6,
+                                                ease: 'easeInOut',
+                                                delay: 0.2,
+                                            }}
+                                            className="col-span-full sm:col-span-3 lg:col-span-2 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900"
+                                        >
                                             <div>
                                                 <div className="relative aspect-square rounded-full size-32 flex border mx-auto dark:bg-white/5 dark:border-white/10 before:absolute before:-inset-2 before:border dark:before:border-white/5 dark:before:bg-white/5 before:rounded-full">
                                                     <span className="w-full h-full flex items-center justify-center mx-auto text-5xl font-semibold text-transparent">
@@ -155,8 +215,21 @@ export default function Home() {
                                                     </Link>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="col-span-full sm:col-span-3 lg:col-span-2 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900">
+                                        </motion.div>
+                                        <motion.div
+                                            initial={{ y: '10vh', opacity: 0 }}
+                                            animate={
+                                                isInView
+                                                    ? { y: 0, opacity: 1 }
+                                                    : {}
+                                            }
+                                            transition={{
+                                                duration: 0.6,
+                                                ease: 'easeInOut',
+                                                delay: 0.3,
+                                            }}
+                                            className="col-span-full sm:col-span-3 lg:col-span-2 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900 flex items-center justify-center"
+                                        >
                                             <div>
                                                 <div className="pt-6 lg:px-6">
                                                     <Image
@@ -184,8 +257,21 @@ export default function Home() {
                                                     </p>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="col-span-full lg:col-span-3 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900">
+                                        </motion.div>
+                                        <motion.div
+                                            initial={{ y: '10vh', opacity: 0 }}
+                                            animate={
+                                                isInView
+                                                    ? { y: 0, opacity: 1 }
+                                                    : {}
+                                            }
+                                            transition={{
+                                                duration: 0.6,
+                                                ease: 'easeInOut',
+                                                delay: 0.2,
+                                            }}
+                                            className="col-span-full lg:col-span-3 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-neutral-900"
+                                        >
                                             <div className="grid sm:grid-cols-2">
                                                 <div className="flex flex-col justify-between relative z-10 space-y-12 lg:space-y-6">
                                                     <div className="relative aspect-square rounded-full size-12 flex border dark:bg-white/5 dark:border-white/10 before:absolute before:-inset-2 before:border dark:before:border-white/5 dark:before:bg-white/5 before:rounded-full">
@@ -227,8 +313,21 @@ export default function Home() {
                                                     />
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="col-span-full lg:col-span-3 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-[#161616]">
+                                        </motion.div>
+                                        <motion.div
+                                            initial={{ x: '10vw', opacity: 0 }}
+                                            animate={
+                                                isInView
+                                                    ? { x: 0, opacity: 1 }
+                                                    : {}
+                                            }
+                                            transition={{
+                                                duration: 0.6,
+                                                ease: 'easeInOut',
+                                                delay: 0.2,
+                                            }}
+                                            className="col-span-full lg:col-span-3 overflow-hidden relative p-8 rounded-xl bg-white border border-gray-200 dark:border-neutral-800 dark:bg-[#161616]"
+                                        >
                                             <div className="h-full w-full grid sm:grid-cols-1 md:grid-cols-2">
                                                 <div className="flex flex-col justify-between relative z-10 space-y-12 lg:space-y-6 pb-4">
                                                     <div className="relative aspect-square rounded-full size-12 flex border dark:bg-white/5 dark:border-white/10 before:absolute before:-inset-2 before:border dark:before:border-white/5 dark:before:bg-white/5 before:rounded-full">
@@ -263,7 +362,7 @@ export default function Home() {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     </div>
                                 </div>
                             </div>
@@ -273,7 +372,7 @@ export default function Home() {
                         id="testimonials"
                         className="flex flex-col items-center justify-center"
                     >
-                        <h1 className="animate-fade-in-bottom bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
+                        <h1 className=" bg-gradient-to-r from-purple-500 to-purple-300 inline-block text-transparent bg-clip-text text-6xl font-bold h-auto poppins py-4 ">
                             Made for power users
                         </h1>
 
