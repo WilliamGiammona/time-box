@@ -57,6 +57,7 @@ const config = {
                     foreground: 'var(--card-foreground)',
                 },
             },
+
             borderRadius: {
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
@@ -81,11 +82,34 @@ const config = {
                         transform: 'translate3d(0%, 0%, 0)',
                     },
                 },
+                'spin-decelerate': {
+                    '0%': {
+                        transform: 'rotate(0deg)  scale(1)',
+                        animationTimingFunction: 'ease-in-out',
+                    },
+                    '25%': {
+                        transform: 'scale(1.1)',
+                        animationTimingFunction: 'ease-in-out',
+                    },
+                    '50%': {
+                        transform: 'scale(1.1)',
+                        animationTimingFunction: 'ease-in-out',
+                    },
+                    '75%': {
+                        transform: 'rotate(0deg) scale(1)',
+                        animationTimingFunction: 'ease-in-out',
+                    },
+                    '100%': {
+                        transform: 'rotate(360deg) scale(1)',
+                        animationTimingFunction: 'ease-in-out',
+                    },
+                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
                 'accordion-up': 'accordion-up 0.2s ease-out',
                 'fade-in-bottom': 'fade-in-bottom 0.6s ease-out',
+                'spin-decelerate': 'spin-decelerate 2s infinite',
             },
         },
     },

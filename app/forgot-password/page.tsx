@@ -4,18 +4,18 @@ import { DialogHeader } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '@/app/firebase';
+import { fireauth } from '@/app/firebase';
 
 export default function ForgotPassword() {
     const [email, setEmail] = useState('');
 
     const resetEmail = () => {
-        sendPasswordResetEmail(auth, email);
+        sendPasswordResetEmail(fireauth, email);
     };
     return (
         <>
             <DialogHeader>
-                <h1 className="mx-auto my-10">Forgot Password</h1>
+                <h1 className="mx-auto mt-4 font-bold">Forgot Password</h1>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="flex flex-col items-center w-80 m-auto">
