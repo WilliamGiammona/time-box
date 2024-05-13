@@ -27,7 +27,9 @@ function Login() {
         <>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="default">Sign In</Button>
+                    <Button variant="default" className="bg-neutral-900">
+                        Sign In
+                    </Button>
                 </DialogTrigger>
                 <DialogContent className="lg">
                     <DialogHeader>
