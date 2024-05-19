@@ -21,10 +21,13 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [open, setOpen] = useState(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    const handleLogin = async (credentials) => {
+    const handleLogin = async (credentials: {
+        email: string;
+        password: string;
+    }) => {
         const result = await signIn('credentials', {
             ...credentials,
             redirect: false,

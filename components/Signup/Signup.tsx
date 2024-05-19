@@ -35,8 +35,12 @@ function SignUp() {
                 await createUserWithEmailAndPassword(fireauth, email, password);
                 setLoading(false);
                 setSuccess(true);
-            } catch (error) {
-                setError(getRefinedFirebaseAuthErrorMessage(error.message));
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    setError(getRefinedFirebaseAuthErrorMessage(error.message));
+                } else {
+                    setError('An unknown error occurred');
+                }
                 setLoading(false);
                 setSuccess(false);
             }

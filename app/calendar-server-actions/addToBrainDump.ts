@@ -5,7 +5,7 @@ import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { auth } from '@/auth';
 
-export default async function addToBrainDump(formData) {
+export default async function addToBrainDump(formData: FormData) {
     const session = await auth();
     const email = session?.user?.email;
 

@@ -3,11 +3,12 @@ import { Inter, Poppins } from 'next/font/google';
 
 import './globals.css';
 import { auth } from '@/auth';
-import SessionProvider from './SessionProvider';
 import Navbar from '@/components/Navbar/Navbar';
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/theme-provider';
 import React from 'react';
+import { Session } from 'next-auth';
+import { SessionProvider } from 'next-auth/react';
 
 const inter = Inter({ subsets: ['latin'] });
 const poppins = Poppins({
@@ -26,6 +27,7 @@ export default async function RootLayout({
     children,
 }: {
     children: React.ReactNode;
+    session: Session | null;
 }) {
     // Logging children variable
     const session = await auth();

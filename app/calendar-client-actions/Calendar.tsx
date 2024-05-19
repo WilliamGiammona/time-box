@@ -2,7 +2,11 @@
 import React, { useTransition, useRef, useState, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
-import interactionPlugin, { Draggable } from '@fullcalendar/interaction';
+import interactionPlugin, {
+    DateClickArg,
+    Draggable,
+    DropArg,
+} from '@fullcalendar/interaction';
 // import { Dialog, Transition } from '@headlessui/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import { Fragment } from 'react';
@@ -15,7 +19,7 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import { EventSourceInput } from '@fullcalendar/core/index.js';
+import { EventContentArg, EventSourceInput } from '@fullcalendar/core/index.js';
 import { Button } from '@/components/ui/button';
 
 import { Transition, Dialog } from '@headlessui/react';
@@ -38,20 +42,30 @@ import deleteCalendarTask from '../calendar-server-actions/deleteCalendarTask';
 import timeboxLogo from '../../assets/evocal-2.png';
 import Image from 'next/image';
 import { useOptimistic } from 'react';
+import { BrainDumpTask } from '../calendar-server-actions/getBrainDump';
+import { EventItem } from '../calendar-server-actions/getUserTasks';
+import { addMinutes, format } from 'date-fns';
 
-function Calendar({ braindump, tasks }) {
+function Calendar({
+    braindump,
+    tasks,
+}: {
+    braindump: BrainDumpTask[];
+    tasks: EventItem[];
+}) {
     const [optimisticBraindump, addOptimisticBraindump] = useOptimistic(
         braindump,
-        (state, newBraindump) => {
+        (state: BrainDumpTask[], newBraindump: BrainDumpTask) => {
             return [...state, newBraindump];
         }
     );
     const [optimisticTasks, addOptimisticTask] = useOptimistic(
         tasks,
-        (state, newTasks) => {
-            return [...state, newTasks];
+        (state: EventItem[], newTask: EventItem) => {
+            return [...state, newTask];
         }
     );
+
     const calendarRef = useRef<FullCalendar | null>(null);
     const [calendarTitle, setCalendarTitle] = useState('');
     const [adding, setAdding] = useState(false);
@@ -62,14 +76,30 @@ function Calendar({ braindump, tasks }) {
     const [isPending, startTransition] = useTransition();
 
     const [calendarView, setCalendarView] = useState('week');
-    const [taskIdToDelete, setTaskIdToDelete] = useState<number | null>(null);
+    const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
 
     //Modals
     //Delete modal
     const [showDeleteModal, setDeleteModal] = useState(false);
     //Add task modal
     const [showAddTaskModal, setAddTaskModal] = useState(false);
-    const [eventData, setEventData] = useState({});
+
+    type EventData = {
+        date: Date | null;
+        start: Date | null;
+        end: Date | null;
+        allDay: boolean;
+        dateStr: string;
+    };
+
+    const [eventData, setEventData] = useState<EventData>({
+        date: null,
+        start: null,
+        end: null,
+        allDay: false,
+        dateStr: '',
+    });
+    const [eventTag, setEventTag] = useState('bg-gray-400');
 
     function handleChangeView(value: string) {
         let calendarView;
@@ -95,12 +125,12 @@ function Calendar({ braindump, tasks }) {
     }
 
     function setToday() {
-        !calendarRef.current!.getApi().today();
+        calendarRef.current!.getApi().today();
         return getTitle();
     }
 
     function setPrevious() {
-        !calendarRef.current!.getApi().prev();
+        calendarRef.current!.getApi().prev();
         return getTitle();
     }
 
@@ -118,7 +148,7 @@ function Calendar({ braindump, tasks }) {
         return '';
     }
 
-    function handleDeleteTaskModal(deleteLocation: string, id: number) {
+    function handleDeleteTaskModal(deleteLocation: string, id: string) {
         setDeleteModal(true);
         setDeleteLocation(deleteLocation);
         setTaskIdToDelete(id);
@@ -128,22 +158,26 @@ function Calendar({ braindump, tasks }) {
         setDeleteModal(false);
 
         if (deleteLocation === 'braindump') {
-            await deleteBrainDumpTask(taskIdToDelete);
+            if (taskIdToDelete !== null) {
+                await deleteBrainDumpTask(taskIdToDelete);
+            }
         }
 
         if (deleteLocation === 'events') {
-            await deleteCalendarTask(taskIdToDelete);
+            if (taskIdToDelete !== null) {
+                await deleteCalendarTask(taskIdToDelete);
+            }
         }
 
         setDeleteModal(false);
     };
 
-    function handleDateClick(e) {
+    function handleDateClick(e: DateClickArg) {
         // Extract the relevant properties from the event object
         const eventDetails = {
             date: e.date,
-            start: e.start,
-            end: e.end,
+            start: e.date,
+            end: addMinutes(e.date, 60),
             allDay: e.allDay,
             dateStr: e.dateStr,
         };
@@ -151,46 +185,95 @@ function Calendar({ braindump, tasks }) {
         setAddTaskModal(true);
     }
 
-    const handleTitleChange = (e) => {
+    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(e.target.value);
     };
 
     const addToCalendarWithData = async () => {
-        addOptimisticTask({
+        const eventItem = {
+            id: null, // Generate or retrieve an ID for the event
             title: title as string,
-            ...eventData,
-        });
+            tag: eventTag as string,
+            date: eventData.date?.toISOString() || '',
+            start: eventData.start?.toISOString(),
+            end: eventData.end?.toISOString(),
+            allDay: eventData.allDay,
+            dateStr: eventData.dateStr,
+        };
 
-        await addToCalendar({ title, eventData });
+        const eventItemUpload = {
+            id: null, // Generate or retrieve an ID for the event
+            title: title as string,
+            tag: eventTag as string,
+            date: eventData.date,
+            start: eventData.start,
+            end: eventData.end,
+            allDay: eventData.allDay,
+            dateStr: eventData.dateStr,
+        };
+
+        addOptimisticTask(eventItem);
+
+        if (eventItem.date) {
+            await addToCalendar(eventItemUpload);
+        }
     };
 
     const addToBrainDumpData = async (formData: FormData) => {
         const title = formData.get('title');
         addOptimisticBraindump({
+            id: (Object.keys(optimisticBraindump).length + 1).toString(),
             title: title as string,
             createdAt: serverTimestamp() as Timestamp,
         });
         await addToBrainDump(formData);
     };
-    const handleTaskDrop = async (data) => {
+
+    const handleTaskDrop = async (data: DropArg) => {
         const eventDataPlain = {
+            id: null,
             title: data.draggedEl.innerHTML,
-            date: data.date, // Convert date to string
-            start: data?.start, // Convert start date to string if it exists
-            end: data?.end, // Convert end date to string if it exists
+            date: data.date,
+            start: data.date,
+            end: addMinutes(data.date, 60),
+            tag: eventTag,
             allDay: data.allDay,
             dateStr: data.dateStr,
         };
 
-        console.log(title);
         startTransition(async () => {
             try {
-                await addToCalendar({ title, eventData: eventDataPlain });
+                await addToCalendar(eventDataPlain);
             } catch (error) {
                 console.error('Error submitting form:', error);
             }
         });
     };
+
+    const renderEventContent = (argObj: EventContentArg) => {
+        const { event } = argObj;
+
+        const tag = event.extendedProps.tag || 'bg-gray-400';
+
+        return (
+            <div>
+                <div className="flex items-center text-neutral-800 dark:text-neutral-50">
+                    <div
+                        className={`w-2 h-2 rounded-full border border-neutral-800/50 hover:opacity-50 transition-all duration-300 mx-1 ${tag}`}
+                    />
+                    <div className="flex flex-col">
+                        <div className="w-full">{event.title}</div>
+                        <div className="text-xs flex w-full dark:text-neutral-300 text-neutral-600">
+                            {event.start && event.end
+                                ? `${format(event.start, 'HH:mm')} - ${format(event.end, 'HH:mm')}`
+                                : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     useEffect(() => {
         const draggableEl = document.getElementById('draggable-el');
 
@@ -237,12 +320,12 @@ function Calendar({ braindump, tasks }) {
                                             key={task.id}
                                             id="draggable-el"
                                             draggable="true"
-                                            onClick={() =>
+                                            onClick={() => {
                                                 handleDeleteTaskModal(
                                                     'braindump',
-                                                    task.id
-                                                )
-                                            }
+                                                    task.id!.toString()
+                                                );
+                                            }}
                                         >
                                             {task.title}
                                         </motion.div>
@@ -373,9 +456,12 @@ function Calendar({ braindump, tasks }) {
                                 droppable={true}
                                 selectable={true}
                                 selectMirror={true}
-                                eventClick={(e) =>
-                                    handleDeleteTaskModal('events', e.event.id)
+                                eventContent={(argObj) =>
+                                    renderEventContent(argObj)
                                 }
+                                eventClick={(e) => {
+                                    handleDeleteTaskModal('events', e.event.id);
+                                }}
                                 drop={(data) => handleTaskDrop(data)}
                                 dateClick={(e) => handleDateClick(e)}
                                 // drop={(data) => addEvent(data)}
@@ -384,10 +470,15 @@ function Calendar({ braindump, tasks }) {
 
                                     const updateData = {
                                         eventId: event.id,
-                                        newDate: event.start as Timestamp,
-                                        start: event.start as Timestamp,
-                                        end: event.end as Timestamp,
+                                        newDate: event.start as Date,
+                                        allDay: event.allDay as boolean,
+                                        start: event.start as Date,
+                                        end: addMinutes(
+                                            event.start!,
+                                            60
+                                        ) as Date,
                                     };
+
                                     updateUserTask(updateData);
                                 }}
                                 eventResize={(data) => {
@@ -395,14 +486,12 @@ function Calendar({ braindump, tasks }) {
 
                                     const updateData = {
                                         eventId: event.id,
-
-                                        start: event.start as Timestamp,
-                                        end: event.end as Timestamp,
+                                        allDay: event.allDay as boolean,
+                                        start: event.start as Date,
+                                        end: event.end as Date,
                                     };
                                     updateUserTask(updateData);
                                 }}
-                                // // drop={() => console.log('hello')}
-                                // eventClick={(data) => handleDeleteModal(data)}
                             />
                         </div>
                     </ResizablePanel>
@@ -653,11 +742,14 @@ function Calendar({ braindump, tasks }) {
                                                     action={
                                                         addToCalendarWithData
                                                     }
-                                                    onSubmit={() =>
-                                                        setAddTaskModal(false)
-                                                    }
+                                                    onSubmit={() => {
+                                                        setAddTaskModal(false);
+                                                        setEventTag(
+                                                            'bg-gray-400'
+                                                        );
+                                                    }}
                                                 >
-                                                    <div className="mt-2">
+                                                    <div className="flex mt-2">
                                                         <input
                                                             type="text"
                                                             name="title"
@@ -678,7 +770,42 @@ function Calendar({ braindump, tasks }) {
                             sm:text-sm sm:leading-6"
                                                             placeholder="Title"
                                                         />
+                                                        <Select
+                                                            value={eventTag}
+                                                            onValueChange={(
+                                                                value
+                                                            ) =>
+                                                                setEventTag(
+                                                                    value
+                                                                )
+                                                            }
+                                                            defaultValue="bg-gray-400"
+                                                        >
+                                                            <SelectTrigger className="w-[180px] text-neutral-800 dark:bg-neutral-900 dark:text-neutral-50">
+                                                                <SelectValue
+                                                                    placeholder="Tag Color"
+                                                                    className="text-neutral-800"
+                                                                />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                <SelectGroup>
+                                                                    <SelectItem value="bg-gray-400">
+                                                                        <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                                                                    </SelectItem>
+                                                                    <SelectItem value="bg-purple-400">
+                                                                        <div className="w-2 h-2 rounded-full bg-purple-400"></div>
+                                                                    </SelectItem>
+                                                                    <SelectItem value="bg-blue-400">
+                                                                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                                                                    </SelectItem>
+                                                                    <SelectItem value="bg-red-400">
+                                                                        <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                                                                    </SelectItem>
+                                                                </SelectGroup>
+                                                            </SelectContent>
+                                                        </Select>
                                                     </div>
+
                                                     <div className="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                                                         <button
                                                             type="submit"
@@ -694,11 +821,14 @@ function Calendar({ braindump, tasks }) {
                                                         <button
                                                             type="button"
                                                             className="mt-3 inline-flex w-full justify-center rounded-md  px-3 py-2 text-sm font-semibold text-neutral-900 dark:text-neutral-50 hover:dark:bg-neutral-800 shadow-sm ring-1 ring-inset ring-neutral-300 hover:bg-neutral-50 sm:col-start-1 sm:mt-0"
-                                                            onClick={() =>
+                                                            onClick={() => {
                                                                 setAddTaskModal(
                                                                     false
-                                                                )
-                                                            }
+                                                                );
+                                                                setEventTag(
+                                                                    'bg-gray-400'
+                                                                );
+                                                            }}
                                                         >
                                                             Cancel
                                                         </button>

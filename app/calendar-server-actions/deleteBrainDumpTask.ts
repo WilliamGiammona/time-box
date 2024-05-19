@@ -4,7 +4,7 @@ import { db } from '../firebase';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
 
-export default async function deleteBrainDumpTask(id: number) {
+export default async function deleteBrainDumpTask(id: string) {
     const session = await auth();
     const email = session?.user?.email;
     // console.log(id);

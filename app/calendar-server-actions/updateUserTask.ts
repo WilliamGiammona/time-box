@@ -1,15 +1,16 @@
 'use server';
 
-import { Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { auth } from '@/auth';
 import { doc, updateDoc } from 'firebase/firestore';
+import { revalidatePath } from 'next/cache';
 
 interface UpdateEventData {
     eventId: string;
-    start: Timestamp;
-    end: Timestamp;
-    newDate?: Timestamp;
+    start: Date;
+    allDay: boolean;
+    end: Date;
+    newDate?: Date;
 }
 export default async function updateUserTask(data: UpdateEventData) {
     const session = await auth();
@@ -23,10 +24,12 @@ export default async function updateUserTask(data: UpdateEventData) {
             await updateDoc(eventsCollectionRef, {
                 ...(data.newDate && { date: data.newDate }),
                 start: data.start,
+                allDay: data.allDay,
                 end: data.end,
             });
         } catch (error) {
             console.error('Error updating user task:', error);
         }
+        revalidatePath('/calendar');
     }
 }

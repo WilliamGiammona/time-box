@@ -1,5 +1,5 @@
 import { auth } from './auth';
-import { getSession } from 'next-auth/react';
+import { getSession, GetSessionParams } from 'next-auth/react';
 
 export default auth((req) => {
     const { nextUrl } = req;
@@ -15,7 +15,7 @@ export const config = {
     matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };
 
-export const getServerSideProps = async (context) => {
+export const getServerSideProps = async (context: GetSessionParams) => {
     const session = await getSession(context);
 
     return {
