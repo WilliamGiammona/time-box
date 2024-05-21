@@ -4,6 +4,7 @@ import Calendar from '../calendar-client-actions/Calendar';
 import { auth } from '@/auth';
 import getUserTasks from '../calendar-server-actions/getUserTasks';
 import getBrainDumpTasks from '../calendar-server-actions/getBrainDump';
+import { convertFirebaseEventDates } from '@/lib/utils';
 
 export default async function NewCalendar() {
     const session = await auth();
@@ -11,7 +12,8 @@ export default async function NewCalendar() {
     const email = session?.user?.email;
 
     if (!email) return;
-    const tasks = await getUserTasks(email);
+    const rawtasks = await getUserTasks(email);
+    const tasks = convertFirebaseEventDates(rawtasks);
     const braindump = await getBrainDumpTasks(email);
 
     return (

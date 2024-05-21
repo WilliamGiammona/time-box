@@ -16,6 +16,8 @@ export default async function updateUserTask(data: UpdateEventData) {
     const session = await auth();
     const email = session?.user?.email;
 
+    console.log(data);
+
     if (email) {
         try {
             const userDocRef = doc(db, 'users', email);

@@ -59,12 +59,17 @@ function Calendar({
             return [...state, newBraindump];
         }
     );
-    const [optimisticTasks, addOptimisticTask] = useOptimistic(
-        tasks,
-        (state: EventItem[], newTask: EventItem) => {
-            return [...state, newTask];
-        }
-    );
+    console.log(tasks);
+    const [optimisticTasks, addOptimisticTask] = useOptimistic<
+        EventItem[],
+        EventItem
+    >(tasks, (state, newTask) => {
+        return [...state, newTask];
+    });
+
+    useEffect(() => {
+        console.log(optimisticTasks);
+    }, [optimisticTasks]);
 
     const calendarRef = useRef<FullCalendar | null>(null);
     const [calendarTitle, setCalendarTitle] = useState('');
@@ -99,6 +104,7 @@ function Calendar({
         allDay: false,
         dateStr: '',
     });
+
     const [eventTag, setEventTag] = useState('bg-gray-400');
 
     function handleChangeView(value: string) {
@@ -194,9 +200,9 @@ function Calendar({
             id: null, // Generate or retrieve an ID for the event
             title: title as string,
             tag: eventTag as string,
-            date: eventData.date?.toISOString() || '',
-            start: eventData.start?.toISOString(),
-            end: eventData.end?.toISOString(),
+            date: eventData.date,
+            start: eventData.start,
+            end: eventData.end,
             allDay: eventData.allDay,
             dateStr: eventData.dateStr,
         };
@@ -473,10 +479,12 @@ function Calendar({
                                         newDate: event.start as Date,
                                         allDay: event.allDay as boolean,
                                         start: event.start as Date,
-                                        end: addMinutes(
-                                            event.start!,
-                                            60
-                                        ) as Date,
+                                        end:
+                                            (event.end && event.end) ||
+                                            (addMinutes(
+                                                event.start!,
+                                                60
+                                            ) as Date),
                                     };
 
                                     updateUserTask(updateData);
