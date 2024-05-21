@@ -21,7 +21,7 @@ import { HiCursorClick } from 'react-icons/hi';
 import { FaCalendarWeek, FaFire } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export default function Home() {
     const router = useRouter();
@@ -29,6 +29,17 @@ export default function Home() {
 
     const ref = useRef(null);
     const isInView = useInView(ref, { once: false, amount: 0.5 });
+    useEffect(() => {
+        let scroll: import('locomotive-scroll');
+        import('locomotive-scroll').then((locomotiveModule) => {
+            scroll = new locomotiveModule.default();
+        });
+
+        // cleanup phase
+        return () => {
+            if (scroll) scroll.destroy();
+        };
+    });
 
     return (
         <>
